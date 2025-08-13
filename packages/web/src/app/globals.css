@@ -20,7 +20,7 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: #f0f2f5; /* Light gray background */
+  color: #333; /* Darker text for readability */
   font-family: Arial, Helvetica, sans-serif;
 }
