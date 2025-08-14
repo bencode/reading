@@ -9,10 +9,15 @@ export interface Article {
   published_at: string;
   created_at: string;
   is_read: boolean;
-  // tags: string | null; // Removed as per new schema
+  tags: Tag[];
 }
 
 export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface Tag {
   id: number;
   name: string;
 }
@@ -63,10 +68,23 @@ export async function getArticles(categoryId?: number, page: number = 1, limit: 
   const stmt = db.prepare(query);
   const articles = stmt.all(...params) as Article[];
   
+  // Fetch tags for each article
+  const tagStmt = db.prepare(`
+    SELECT t.id, t.name 
+    FROM tags t 
+    JOIN article_tags at ON t.id = at.tag_id 
+    WHERE at.article_id = ?
+  `);
+  
+  const articlesWithTags = articles.map(article => ({
+    ...article,
+    tags: tagStmt.all(article.id) as Tag[]
+  }));
+  
   const totalPages = Math.ceil(total / limit);
   
   return {
-    data: articles,
+    data: articlesWithTags,
     total,
     page,
     limit,
@@ -74,8 +92,20 @@ export async function getArticles(categoryId?: number, page: number = 1, limit: 
   };
 }
 
-export async function markArticleAsRead(id: number): Promise<void> {
+export async function toggleArticleReadStatus(id: number): Promise<boolean> {
   const db = getDb();
-  const stmt = db.prepare('UPDATE articles SET is_read = TRUE WHERE id = ?');
-  stmt.run(id);
+  
+  // First get current status
+  const getCurrentStmt = db.prepare('SELECT is_read FROM articles WHERE id = ?');
+  const currentArticle = getCurrentStmt.get(id) as { is_read: number } | undefined;
+  
+  if (!currentArticle) {
+    throw new Error('Article not found');
+  }
+  
+  const newStatus = !currentArticle.is_read;
+  const updateStmt = db.prepare('UPDATE articles SET is_read = ? WHERE id = ?');
+  updateStmt.run(newStatus ? 1 : 0, id);
+  
+  return newStatus;
 }

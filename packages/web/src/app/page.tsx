@@ -1,6 +1,6 @@
 'use client';
 
-import { Article, Category, PaginatedResponse } from '../services/articleService';
+import { Article, Category, Tag, PaginatedResponse } from '../services/articleService';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -91,6 +91,29 @@ export default function Home() {
     fetchArticles(selectedCategory || undefined, page);
   };
 
+  const handleToggleReadStatus = async (articleId: number, currentStatus: boolean) => {
+    // Optimistic update - update UI immediately
+    const newStatus = !currentStatus;
+    setArticles(articles.map(article => 
+      article.id === articleId 
+        ? { ...article, is_read: newStatus }
+        : article
+    ));
+
+    const response = await fetch(`/api/articles/${articleId}`, {
+      method: 'PATCH',
+    });
+
+    if (!response.ok) {
+      // Revert optimistic update on error
+      setArticles(articles.map(article => 
+        article.id === articleId 
+          ? { ...article, is_read: currentStatus }
+          : article
+      ));
+    }
+  };
+
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
@@ -131,11 +154,20 @@ export default function Home() {
                     <Badge variant="secondary" className="shrink-0">New</Badge>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-1 text-sm text-gray-600">
+                <div className="flex flex-wrap gap-1 text-sm text-gray-600 mb-2">
                   <Badge variant="outline">{article.source_name}</Badge>
                   <span>•</span>
                   <span>{new Date(article.published_at).toLocaleDateString()}</span>
                 </div>
+                {article.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {article.tags.map((tag) => (
+                      <Badge key={tag.id} variant="default" className="text-xs">
+                        {tag.name}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="flex-1 flex flex-col">
                 <p className="text-gray-700 mb-4 flex-1 line-clamp-4">{article.summary}</p>
@@ -152,9 +184,10 @@ export default function Home() {
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className={article.is_read ? "text-green-600" : "text-gray-500"}
+                    onClick={() => handleToggleReadStatus(article.id, article.is_read)}
+                    className={article.is_read ? "text-green-600 hover:text-green-700" : "text-gray-500 hover:text-gray-700"}
                   >
-                    {article.is_read ? "Read" : "Mark as Read"}
+                    {article.is_read ? "Mark as Unread" : "Mark as Read"}
                   </Button>
                 </div>
               </CardContent>
