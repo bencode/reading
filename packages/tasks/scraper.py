@@ -44,6 +44,20 @@ def get_or_create_tag(conn, tag_name):
         cursor.execute("INSERT INTO tags (name) VALUES (?) RETURNING id", (tag_name,))
         return cursor.fetchone()[0]
 
+def check_article_exists(url):
+    """Checks if an article with the given URL already exists in the database."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id FROM articles WHERE original_url = ?", (url,))
+        result = cursor.fetchone()
+        return result is not None
+    except Exception as e:
+        print(f"Error checking if article exists: {e}")
+        return False
+    finally:
+        conn.close()
+
 def insert_article(article, category_name=None, tag_names=None):
     """Inserts a single article into the database, avoiding duplicates, and links categories/tags."""
     conn = sqlite3.connect(DB_PATH)
@@ -56,29 +70,31 @@ def insert_article(article, category_name=None, tag_names=None):
         )
         article_id = cursor.fetchone()[0]
         conn.commit()
-        print(f"Inserted article: {article['title']} with ID {article_id}")
+        print(f"✓ Inserted new article: {article['title']} with ID {article_id}")
 
         # Link category
         if category_name:
             category_id = get_or_create_category(conn, category_name)
-            print(f"Category ID for '{category_name}': {category_id}")
             cursor.execute("INSERT INTO article_categories (article_id, category_id) VALUES (?, ?)", (article_id, category_id))
             conn.commit()
-            print(f"Linked article {article_id} to category: {category_name}")
+            print(f"  └─ Linked to category: {category_name}")
 
         # Link tags
         if tag_names:
             for tag_name in tag_names:
                 tag_id = get_or_create_tag(conn, tag_name)
-                print(f"Tag ID for '{tag_name}': {tag_id}")
                 cursor.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", (article_id, tag_id))
             conn.commit()
-            print(f"Linked article {article_id} to tags: {tag_names}")
+            print(f"  └─ Linked to tags: {', '.join(tag_names)}")
+
+        return True  # Successfully inserted
 
     except sqlite3.IntegrityError:
-        print(f"Article already exists: {article['title']}")
+        print(f"⚠ Article already exists (skipped): {article['title']}")
+        return False  # Already exists
     except Exception as e:
-        print(f"An error occurred while inserting article {article['title']}: {e}")
+        print(f"✗ Error inserting article {article['title']}: {e}")
+        return False
     finally:
         conn.close()
 
@@ -150,41 +166,59 @@ def main():
     """Main function to fetch, summarize, categorize, and process articles."""
     init_db()
 
+    # Different fetch limits based on source type
     feeds = {
-        "Hacker News": "https://news.ycombinator.com/rss",
-        "Lobsters": "https://lobste.rs/rss",
-        "InfoQ": "https://feed.infoq.com",
-        "Martin Fowler": "https://martinfowler.com/feed.xml",
-        "Planet Python": "https://planetpython.org/rss20.xml",
-        "Real Python": "https://realpython.com/atom.xml",
-        "Planet Clojure": "https://planet.clojure.in/atom.xml",
-        "Clojure Gazette": "https://clojure.org/feed.xml",
-        "Lambda the Ultimate": "http://lambda-the-ultimate.org/rss.xml",
-        "Vercel Blog": "https://vercel.com/atom",
-        "React Blog": "https://react.dev/blog/rss.xml",
-        "Smashing Magazine": "https://www.smashingmagazine.com/feed",
-        "CSS-Tricks": "https://css-tricks.com/feed/",
-        "Overreacted (Dan Abramov)": "https://overreacted.io/rss.xml",
-        "Kent C. Dodds": "https://kentcdodds.com/blog/rss.xml",
-        "OpenAI Blog": "https://openai.com/blog/rss.xml",
-        "Google AI Blog": "https://ai.googleblog.com/feeds/posts/default",
-        "Hugging Face Blog": "https://huggingface.co/blog/feed.xml",
-        "The Batch (DeepLearning.AI)": "https://www.deeplearning.ai/the-batch/feed/",
-        "Import AI Newsletter": "https://importai.net/feed",
-        "Andrej Karpathy's Blog": "https://karpathy.blog/rss.xml",
-        "Sebastian Raschka": "https://magazine.sebastianraschka.com/feed",
+        # High-frequency sources (news aggregators, active communities)
+        "Hacker News": {"url": "https://news.ycombinator.com/rss", "limit": 30},
+        "Lobsters": {"url": "https://lobste.rs/rss", "limit": 25},
+        "InfoQ": {"url": "https://feed.infoq.com", "limit": 20},
+        "Planet Python": {"url": "https://planetpython.org/rss20.xml", "limit": 20},
+        "Smashing Magazine": {"url": "https://www.smashingmagazine.com/feed", "limit": 15},
+        "CSS-Tricks": {"url": "https://css-tricks.com/feed/", "limit": 15},
+        
+        # Medium-frequency sources (regular publishers)
+        "Real Python": {"url": "https://realpython.com/atom.xml", "limit": 10},
+        "Planet Clojure": {"url": "https://planet.clojure.in/atom.xml", "limit": 10},
+        "Vercel Blog": {"url": "https://vercel.com/atom", "limit": 10},
+        "React Blog": {"url": "https://react.dev/blog/rss.xml", "limit": 10},
+        "Google AI Blog": {"url": "https://ai.googleblog.com/feeds/posts/default", "limit": 10},
+        "Hugging Face Blog": {"url": "https://huggingface.co/blog/feed.xml", "limit": 10},
+        
+        # Low-frequency sources (personal blogs, specialized content)
+        "Martin Fowler": {"url": "https://martinfowler.com/feed.xml", "limit": 5},
+        "Clojure Gazette": {"url": "https://clojure.org/feed.xml", "limit": 5},
+        "Lambda the Ultimate": {"url": "http://lambda-the-ultimate.org/rss.xml", "limit": 5},
+        "Overreacted (Dan Abramov)": {"url": "https://overreacted.io/rss.xml", "limit": 5},
+        "Kent C. Dodds": {"url": "https://kentcdodds.com/blog/rss.xml", "limit": 5},
+        "OpenAI Blog": {"url": "https://openai.com/blog/rss.xml", "limit": 5},
+        "The Batch (DeepLearning.AI)": {"url": "https://www.deeplearning.ai/the-batch/feed/", "limit": 5},
+        "Import AI Newsletter": {"url": "https://importai.net/feed", "limit": 5},
+        "Andrej Karpathy's Blog": {"url": "https://karpathy.blog/rss.xml", "limit": 5},
+        "Sebastian Raschka": {"url": "https://magazine.sebastianraschka.com/feed", "limit": 5},
     }
 
-    for source, url in feeds.items():
-        print(f"\nFetching articles from {source}...")
+    for source, config in feeds.items():
+        url = config["url"]
+        limit = config["limit"]
+        print(f"\nFetching articles from {source} (limit: {limit})...")
         feed = fetch_rss_feed(url)
 
         if feed:
-            articles_to_process = feed.entries[:3] # Process first 3 articles from each feed for testing
+            articles_to_process = feed.entries[:limit]
+
+            processed_count = 0
+            skipped_count = 0
 
             for entry in articles_to_process:
+                # Check if article already exists before processing
+                if check_article_exists(entry.link):
+                    skipped_count += 1
+                    print(f"⏭ Skipping existing article: {entry.title}")
+                    continue
+
                 published_time = time.strftime('%Y-%m-%dT%H:%M:%SZ', entry.get('published_parsed')) if entry.get('published_parsed') else None
 
+                print(f"🔄 Processing new article: {entry.title}")
                 full_content = entry.get('summary', '') if hasattr(entry, 'summary') else entry.get('description', '')
                 summarized_text, category, tags = summarize_and_categorize_article(entry.title, full_content)
 
@@ -195,13 +229,18 @@ def main():
                     'source': source,
                     'published_at': published_time,
                 }
-                insert_article(article, category_name=category, tag_names=tags)
-                print("\n--- Article Processed ---")
-                print(f"Title: {article['title']}")
-                print(f"Link: {article['link']}")
-                print(f"Summarized Content:\n{summarized_text}")
-                print(f"Category: {category}")
-                print(f"Tags: {tags}")
+                
+                if insert_article(article, category_name=category, tag_names=tags):
+                    processed_count += 1
+                    print("--- Article Details ---")
+                    print(f"Title: {article['title']}")
+                    print(f"Link: {article['link']}")
+                    print(f"Summarized Content:\n{summarized_text}")
+                    print(f"Category: {category}")
+                    print(f"Tags: {tags}")
+                    print()
+
+            print(f"📊 Summary for {source}: {processed_count} new articles processed, {skipped_count} existing articles skipped")
 
 
 if __name__ == "__main__":
