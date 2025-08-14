@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { StarIcon, StarFilledIcon } from '@radix-ui/react-icons';
 import { 
   Pagination,
   PaginationContent,
@@ -102,6 +103,10 @@ export default function Home() {
 
     const response = await fetch(`/api/articles/${articleId}`, {
       method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'toggle_read' }),
     });
 
     if (!response.ok) {
@@ -109,6 +114,59 @@ export default function Home() {
       setArticles(articles.map(article => 
         article.id === articleId 
           ? { ...article, is_read: currentStatus }
+          : article
+      ));
+    }
+  };
+
+  const handleToggleStarred = async (articleId: number, currentStatus: boolean) => {
+    // Optimistic update
+    const newStatus = !currentStatus;
+    setArticles(articles.map(article => 
+      article.id === articleId 
+        ? { ...article, starred: newStatus }
+        : article
+    ));
+
+    const response = await fetch(`/api/articles/${articleId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'toggle_starred' }),
+    });
+
+    if (!response.ok) {
+      // Revert optimistic update on error
+      setArticles(articles.map(article => 
+        article.id === articleId 
+          ? { ...article, starred: currentStatus }
+          : article
+      ));
+    }
+  };
+
+  const handleRateArticle = async (articleId: number, rating: number | null) => {
+    // Optimistic update
+    setArticles(articles.map(article => 
+      article.id === articleId 
+        ? { ...article, rating: rating }
+        : article
+    ));
+
+    const response = await fetch(`/api/articles/${articleId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'rate', rating }),
+    });
+
+    if (!response.ok) {
+      // Revert optimistic update on error
+      setArticles(articles.map(article => 
+        article.id === articleId 
+          ? { ...article, rating: article.rating }
           : article
       ));
     }
@@ -171,16 +229,72 @@ export default function Home() {
               </CardHeader>
               <CardContent className="flex-1 flex flex-col">
                 <p className="text-gray-700 mb-4 flex-1 line-clamp-4">{article.summary}</p>
-                <div className="flex justify-between items-center pt-4 border-t">
-                  <Button asChild variant="outline" size="sm">
-                    <a
-                      href={article.original_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                
+                {/* Rating Component */}
+                {article.rating !== null && (
+                  <div className="flex items-center gap-1 mb-3">
+                    <span className="text-sm text-gray-600">Rating:</span>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <StarFilledIcon
+                        key={star}
+                        className={`w-4 h-4 cursor-pointer ${
+                          star <= article.rating! ? 'text-yellow-400' : 'text-gray-300'
+                        }`}
+                        onClick={() => handleRateArticle(article.id, star)}
+                      />
+                    ))}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRateArticle(article.id, null)}
+                      className="ml-2 text-xs text-gray-500 h-6 px-2"
                     >
-                      View Original
-                    </a>
-                  </Button>
+                      Clear
+                    </Button>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex justify-between items-center pt-4 border-t">
+                  <div className="flex items-center gap-2">
+                    <Button asChild variant="outline" size="sm">
+                      <a
+                        href={article.original_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View Original
+                      </a>
+                    </Button>
+                    
+                    {/* Star Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToggleStarred(article.id, article.starred)}
+                      className="p-2"
+                    >
+                      {article.starred ? (
+                        <StarFilledIcon className="w-4 h-4 text-yellow-400" />
+                      ) : (
+                        <StarIcon className="w-4 h-4 text-gray-400" />
+                      )}
+                    </Button>
+                    
+                    {/* Rating Button */}
+                    {article.rating === null && (
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <StarIcon
+                            key={star}
+                            className="w-4 h-4 cursor-pointer text-gray-300 hover:text-yellow-400"
+                            onClick={() => handleRateArticle(article.id, star)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <Button 
                     variant="ghost" 
                     size="sm"

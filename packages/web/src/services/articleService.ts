@@ -9,6 +9,8 @@ export interface Article {
   published_at: string;
   created_at: string;
   is_read: boolean;
+  starred: boolean;
+  rating: number | null;
   tags: Tag[];
 }
 
@@ -108,4 +110,38 @@ export async function toggleArticleReadStatus(id: number): Promise<boolean> {
   updateStmt.run(newStatus ? 1 : 0, id);
   
   return newStatus;
+}
+
+export async function toggleArticleStarred(id: number): Promise<boolean> {
+  const db = getDb();
+  
+  // First get current status
+  const getCurrentStmt = db.prepare('SELECT starred FROM articles WHERE id = ?');
+  const currentArticle = getCurrentStmt.get(id) as { starred: number } | undefined;
+  
+  if (!currentArticle) {
+    throw new Error('Article not found');
+  }
+  
+  const newStatus = !currentArticle.starred;
+  const updateStmt = db.prepare('UPDATE articles SET starred = ? WHERE id = ?');
+  updateStmt.run(newStatus ? 1 : 0, id);
+  
+  return newStatus;
+}
+
+export async function rateArticle(id: number, rating: number | null): Promise<void> {
+  const db = getDb();
+  
+  // Validate rating
+  if (rating !== null && (rating < 0 || rating > 5)) {
+    throw new Error('Rating must be between 0 and 5, or null');
+  }
+  
+  const updateStmt = db.prepare('UPDATE articles SET rating = ? WHERE id = ?');
+  const result = updateStmt.run(rating, id);
+  
+  if (result.changes === 0) {
+    throw new Error('Article not found');
+  }
 }
