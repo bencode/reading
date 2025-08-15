@@ -16,7 +16,7 @@ export async function PATCH(
     const body = await request.json();
     const { action, rating } = body;
 
-    let result: any = { success: true };
+    const result: Record<string, unknown> = { success: true };
 
     switch (action) {
       case 'toggle_read':

@@ -43,6 +43,7 @@ export async function getCategories(): Promise<Category[]> {
 export interface ArticleFilters {
   categoryId?: number;
   starred?: boolean;
+  read?: boolean;
   deleted?: boolean;
   search?: string;
 }
@@ -56,8 +57,8 @@ export async function getArticles(
   
   // Build WHERE conditions
   const whereConditions: string[] = [];
-  const countParams: any[] = [];
-  const queryParams: any[] = [];
+  const countParams: unknown[] = [];
+  const queryParams: unknown[] = [];
   
   // Default: exclude deleted articles unless explicitly requested
   if (filters.deleted === true) {
@@ -71,6 +72,13 @@ export async function getArticles(
     whereConditions.push('a.starred = 1');
   } else if (filters.starred === false) {
     whereConditions.push('a.starred = 0');
+  }
+  
+  // Filter by read status
+  if (filters.read === true) {
+    whereConditions.push('a.is_read = 1');
+  } else if (filters.read === false) {
+    whereConditions.push('a.is_read = 0');
   }
   
   // Filter by search term

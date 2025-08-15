@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const categoryId = searchParams.get('categoryId');
   const starred = searchParams.get('starred');
+  const read = searchParams.get('read');
   const deleted = searchParams.get('deleted');
   const search = searchParams.get('search');
   const page = parseInt(searchParams.get('page') || '1');
@@ -21,6 +22,10 @@ export async function GET(request: NextRequest) {
       filters.starred = starred === 'true';
     }
     
+    if (read !== null) {
+      filters.read = read === 'true';
+    }
+    
     if (deleted !== null) {
       filters.deleted = deleted === 'true';
     }
@@ -31,7 +36,8 @@ export async function GET(request: NextRequest) {
     
     const result = await getArticles(filters, page, limit);
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (err) {
+    console.error('Failed to fetch articles:', err);
     return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 });
   }
 }
