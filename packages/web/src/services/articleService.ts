@@ -35,8 +35,9 @@ export interface PaginatedResponse<T> {
 
 export async function getCategories(): Promise<Category[]> {
   const db = getDb();
-  const stmt = db.prepare('SELECT id, name FROM categories ORDER BY name ASC');
-  const categories = stmt.all() as Category[];
+  const categories = await db('categories')
+    .select('id', 'name')
+    .orderBy('name', 'asc');
   return categories;
 }
 
@@ -55,91 +56,83 @@ export async function getArticles(
 ): Promise<PaginatedResponse<Article>> {
   const db = getDb();
   
-  // Build WHERE conditions
-  const whereConditions: string[] = [];
-  const countParams: unknown[] = [];
-  const queryParams: unknown[] = [];
+  // Build base query
+  let query = db('articles as a').select('a.*');
+  let countQuery = db('articles as a');
+  
+  // Add category join if needed
+  if (filters.categoryId) {
+    query = query.join('article_categories as ac', 'a.id', 'ac.article_id');
+    countQuery = countQuery.join('article_categories as ac', 'a.id', 'ac.article_id');
+    
+    query = query.where('ac.category_id', filters.categoryId);
+    countQuery = countQuery.where('ac.category_id', filters.categoryId);
+  }
   
   // Default: exclude deleted articles unless explicitly requested
   if (filters.deleted === true) {
-    whereConditions.push('a.deleted = 1');
+    query = query.where('a.deleted', true);
+    countQuery = countQuery.where('a.deleted', true);
   } else if (filters.deleted !== false) {
-    whereConditions.push('a.deleted = 0');
+    query = query.where('a.deleted', false);
+    countQuery = countQuery.where('a.deleted', false);
   }
   
   // Filter by starred status
   if (filters.starred === true) {
-    whereConditions.push('a.starred = 1');
+    query = query.where('a.starred', true);
+    countQuery = countQuery.where('a.starred', true);
   } else if (filters.starred === false) {
-    whereConditions.push('a.starred = 0');
+    query = query.where('a.starred', false);
+    countQuery = countQuery.where('a.starred', false);
   }
   
   // Filter by read status
   if (filters.read === true) {
-    whereConditions.push('a.is_read = 1');
+    query = query.where('a.is_read', true);
+    countQuery = countQuery.where('a.is_read', true);
   } else if (filters.read === false) {
-    whereConditions.push('a.is_read = 0');
+    query = query.where('a.is_read', false);
+    countQuery = countQuery.where('a.is_read', false);
   }
   
   // Filter by search term
   if (filters.search) {
-    whereConditions.push('(a.title LIKE ? OR a.summary LIKE ?)');
     const searchTerm = `%${filters.search}%`;
-    countParams.push(searchTerm, searchTerm);
-    queryParams.push(searchTerm, searchTerm);
+    query = query.where(function() {
+      this.where('a.title', 'like', searchTerm)
+          .orWhere('a.summary', 'like', searchTerm);
+    });
+    countQuery = countQuery.where(function() {
+      this.where('a.title', 'like', searchTerm)
+          .orWhere('a.summary', 'like', searchTerm);
+    });
   }
   
-  // Build count query
-  let countQuery = 'SELECT COUNT(*) as total FROM articles a';
-  let hasCategory = false;
+  // Get total count
+  const countResult = await countQuery.count('* as total').first();
+  const total = countResult?.total as number || 0;
   
-  if (filters.categoryId) {
-    countQuery += ' JOIN article_categories ac ON a.id = ac.article_id';
-    whereConditions.push('ac.category_id = ?');
-    countParams.push(filters.categoryId);
-    hasCategory = true;
-  }
+  // Get paginated articles
+  const articles = await query
+    .orderBy('a.published_at', 'desc')
+    .limit(limit)
+    .offset((page - 1) * limit);
   
-  if (whereConditions.length > 0) {
-    countQuery += ' WHERE ' + whereConditions.join(' AND ');
-  }
-  
-  const countStmt = db.prepare(countQuery);
-  const countResult = countStmt.get(...countParams) as { total: number };
-  const total = countResult.total;
-  
-  // Build data query
-  let query = 'SELECT a.* FROM articles a';
-  
-  if (hasCategory) {
-    query += ' JOIN article_categories ac ON a.id = ac.article_id';
-  }
-  
-  if (whereConditions.length > 0) {
-    query += ' WHERE ' + whereConditions.join(' AND ');
-  }
-  
-  query += ' ORDER BY a.published_at DESC LIMIT ? OFFSET ?';
-  
-  // Copy search params to query params
-  queryParams.unshift(...countParams);
-  queryParams.push(limit, (page - 1) * limit);
-  
-  const stmt = db.prepare(query);
-  const articles = stmt.all(...queryParams) as Article[];
-  
-  // Fetch tags for each article
-  const tagStmt = db.prepare(`
-    SELECT t.id, t.name 
-    FROM tags t 
-    JOIN article_tags at ON t.id = at.tag_id 
-    WHERE at.article_id = ?
-  `);
-  
-  const articlesWithTags = articles.map(article => ({
-    ...article,
-    tags: tagStmt.all(article.id) as Tag[]
-  }));
+  // Fetch tags for each article using Knex
+  const articlesWithTags = await Promise.all(
+    articles.map(async (article) => {
+      const tags = await db('tags as t')
+        .select('t.id', 't.name')
+        .join('article_tags as at', 't.id', 'at.tag_id')
+        .where('at.article_id', article.id);
+      
+      return {
+        ...article,
+        tags
+      };
+    })
+  );
   
   const totalPages = Math.ceil(total / limit);
   
@@ -156,16 +149,19 @@ export async function toggleArticleReadStatus(id: number): Promise<boolean> {
   const db = getDb();
   
   // First get current status
-  const getCurrentStmt = db.prepare('SELECT is_read FROM articles WHERE id = ?');
-  const currentArticle = getCurrentStmt.get(id) as { is_read: number } | undefined;
+  const currentArticle = await db('articles')
+    .select('is_read')
+    .where('id', id)
+    .first();
   
   if (!currentArticle) {
     throw new Error('Article not found');
   }
   
   const newStatus = !currentArticle.is_read;
-  const updateStmt = db.prepare('UPDATE articles SET is_read = ? WHERE id = ?');
-  updateStmt.run(newStatus ? 1 : 0, id);
+  await db('articles')
+    .where('id', id)
+    .update({ is_read: newStatus });
   
   return newStatus;
 }
@@ -174,16 +170,19 @@ export async function toggleArticleStarred(id: number): Promise<boolean> {
   const db = getDb();
   
   // First get current status
-  const getCurrentStmt = db.prepare('SELECT starred FROM articles WHERE id = ?');
-  const currentArticle = getCurrentStmt.get(id) as { starred: number } | undefined;
+  const currentArticle = await db('articles')
+    .select('starred')
+    .where('id', id)
+    .first();
   
   if (!currentArticle) {
     throw new Error('Article not found');
   }
   
   const newStatus = !currentArticle.starred;
-  const updateStmt = db.prepare('UPDATE articles SET starred = ? WHERE id = ?');
-  updateStmt.run(newStatus ? 1 : 0, id);
+  await db('articles')
+    .where('id', id)
+    .update({ starred: newStatus });
   
   return newStatus;
 }
@@ -196,10 +195,11 @@ export async function rateArticle(id: number, rating: number | null): Promise<vo
     throw new Error('Rating must be between 0 and 5, or null');
   }
   
-  const updateStmt = db.prepare('UPDATE articles SET rating = ? WHERE id = ?');
-  const result = updateStmt.run(rating, id);
+  const result = await db('articles')
+    .where('id', id)
+    .update({ rating });
   
-  if (result.changes === 0) {
+  if (result === 0) {
     throw new Error('Article not found');
   }
 }
@@ -208,16 +208,19 @@ export async function toggleArticleDeleted(id: number): Promise<boolean> {
   const db = getDb();
   
   // First get current status
-  const getCurrentStmt = db.prepare('SELECT deleted FROM articles WHERE id = ?');
-  const currentArticle = getCurrentStmt.get(id) as { deleted: number } | undefined;
+  const currentArticle = await db('articles')
+    .select('deleted')
+    .where('id', id)
+    .first();
   
   if (!currentArticle) {
     throw new Error('Article not found');
   }
   
   const newStatus = !currentArticle.deleted;
-  const updateStmt = db.prepare('UPDATE articles SET deleted = ? WHERE id = ?');
-  updateStmt.run(newStatus ? 1 : 0, id);
+  await db('articles')
+    .where('id', id)
+    .update({ deleted: newStatus });
   
   return newStatus;
 }
