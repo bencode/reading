@@ -7,6 +7,7 @@ import json
 import re
 import yaml
 from dotenv import load_dotenv
+from bs4 import BeautifulSoup
 
 # Load environment variables from .env file
 load_dotenv()
@@ -231,6 +232,55 @@ def summarize_and_categorize_article(title, content):
         print(f"Error calling LLM API: {e}")
         return f"Summary: (Error during LLM processing) {content[:200]}...", "Other", []
 
+def fetch_full_article_content(url, rss_summary=""):
+    """Fetch full article content from URL, fallback to RSS summary if failed."""
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        # Remove script and style elements
+        for script in soup(["script", "style", "nav", "header", "footer", "aside"]):
+            script.decompose()
+        
+        # Try to find main content areas (common patterns)
+        content_selectors = [
+            'article', 'main', '.content', '.post-content', '.entry-content', 
+            '.article-content', '.post-body', '[role="main"]', '.markdown-body'
+        ]
+        
+        content = ""
+        for selector in content_selectors:
+            elements = soup.select(selector)
+            if elements:
+                content = elements[0].get_text(strip=True, separator=' ')
+                break
+        
+        # Fallback: get all paragraphs if no main content found
+        if not content:
+            paragraphs = soup.find_all('p')
+            content = ' '.join([p.get_text(strip=True) for p in paragraphs])
+        
+        # Clean up content
+        content = re.sub(r'\s+', ' ', content).strip()
+        
+        # If content is too short, use RSS summary as fallback
+        if len(content) < 200:
+            print(f"  ⚠ Short content extracted ({len(content)} chars), using RSS summary as fallback")
+            return rss_summary
+        
+        print(f"  ✓ Extracted full content ({len(content)} chars)")
+        return content
+        
+    except Exception as e:
+        print(f"  ⚠ Failed to fetch full content: {e}")
+        print(f"  → Using RSS summary as fallback ({len(rss_summary)} chars)")
+        return rss_summary
+
 def fetch_rss_feed(feed_url):
     """Fetches and parses an RSS feed."""
     try:
@@ -247,11 +297,16 @@ def main():
     """Main function to fetch, summarize, categorize, and process articles."""
     init_db()
 
-    feeds = load_feeds()
+    # Load configuration
+    with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+        full_config = yaml.safe_load(f)
     
-    for source, config in feeds.items():
-        url = config["url"]
-        limit = config["limit"]
+    feeds = load_feeds()
+    fetch_full_content = full_config.get('settings', {}).get('fetch_full_content', False)
+    
+    for source, feed_config in feeds.items():
+        url = feed_config["url"]
+        limit = feed_config["limit"]
         print(f"\nFetching articles from {source} (limit: {limit})...")
         feed = fetch_rss_feed(url)
 
@@ -271,7 +326,15 @@ def main():
                 published_time = time.strftime('%Y-%m-%dT%H:%M:%SZ', entry.get('published_parsed')) if entry.get('published_parsed') else None
 
                 print(f"🔄 Processing new article: {entry.title}")
-                full_content = entry.get('summary', '') if hasattr(entry, 'summary') else entry.get('description', '')
+                rss_content = entry.get('summary', '') if hasattr(entry, 'summary') else entry.get('description', '')
+                
+                # Fetch full article content if enabled
+                if fetch_full_content:
+                    full_content = fetch_full_article_content(entry.link, rss_content)
+                else:
+                    full_content = rss_content
+                    print(f"  → Using RSS content ({len(full_content)} chars)")
+                
                 summarized_text, category, tags = summarize_and_categorize_article(entry.title, full_content)
 
                 article = {

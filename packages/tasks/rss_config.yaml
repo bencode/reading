@@ -314,6 +314,9 @@ settings:
 
   # Basic UA to avoid some feeds blocking default clients
   user_agent: "ReadingBot/1.0 (+https://example.com)"
+  
+  # Whether to fetch full article content from original URLs
+  fetch_full_content: true
 
 # Classification system for LLM-based categorization
 classification:
