@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { toggleArticleReadStatus, toggleArticleStarred, rateArticle } from '../../../../services/articleService';
+import { toggleArticleReadStatus, toggleArticleStarred, rateArticle, toggleArticleDeleted } from '../../../../services/articleService';
 
 export async function PATCH(
   request: NextRequest,
@@ -32,6 +32,11 @@ export async function PATCH(
       case 'rate':
         await rateArticle(articleId, rating);
         result.rating = rating;
+        break;
+        
+      case 'toggle_deleted':
+        const newDeletedStatus = await toggleArticleDeleted(articleId);
+        result.deleted = newDeletedStatus;
         break;
         
       default:
