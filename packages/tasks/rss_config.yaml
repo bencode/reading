@@ -1,0 +1,399 @@
+# RSS Feed Configuration
+# This file defines all RSS feeds to be scraped, organized by frequency and type
+
+feeds:
+  # High-frequency sources (news aggregators, active communities)
+  # These sources publish frequently, so we fetch more articles
+  high_frequency:
+    - name: "Hacker News"
+      url: "https://news.ycombinator.com/rss"
+      limit: 30
+      enabled: true
+
+    - name: "Lobsters"
+      url: "https://lobste.rs/rss"
+      limit: 25
+      enabled: true
+
+    - name: "InfoQ"
+      url: "https://feed.infoq.com"
+      limit: 20
+      enabled: true
+
+    - name: "Planet Python"
+      url: "https://planetpython.org/rss20.xml"
+      limit: 20
+      enabled: true
+
+    - name: "Smashing Magazine"
+      url: "https://www.smashingmagazine.com/feed"
+      limit: 15
+      enabled: true
+
+    - name: "CSS-Tricks"
+      url: "https://css-tricks.com/feed/"
+      limit: 15
+      enabled: true
+
+    # Reddit 技术向子版块（高频，注意质量需靠 LLM 过滤）
+    - name: "r/programming"
+      url: "https://www.reddit.com/r/programming/.rss"
+      limit: 30
+      enabled: true
+
+    - name: "r/javascript"
+      url: "https://www.reddit.com/r/javascript/.rss"
+      limit: 25
+      enabled: true
+
+    - name: "r/Python"
+      url: "https://www.reddit.com/r/Python/.rss"
+      limit: 25
+      enabled: true
+
+    - name: "r/rust"
+      url: "https://www.reddit.com/r/rust/.rss"
+      limit: 20
+      enabled: true
+
+    - name: "r/MachineLearning"
+      url: "https://www.reddit.com/r/MachineLearning/.rss"
+      limit: 25
+      enabled: true
+
+  # Medium-frequency sources (regular publishers)
+  # These sources publish regularly but less frequently
+  medium_frequency:
+    - name: "Real Python"
+      url: "https://realpython.com/atom.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Planet Clojure"
+      url: "https://planet.clojure.in/atom.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Vercel Blog"
+      url: "https://vercel.com/atom"
+      limit: 10
+      enabled: true
+
+    - name: "Next.js Blog"
+      url: "https://nextjs.org/blog/rss.xml"
+      limit: 10
+      enabled: true
+
+    - name: "React Blog"
+      url: "https://react.dev/blog/rss.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Google AI Blog"
+      url: "https://ai.googleblog.com/feeds/posts/default"
+      limit: 10
+      enabled: true
+
+    - name: "Hugging Face Blog"
+      url: "https://huggingface.co/blog/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "TypeScript Blog"
+      url: "https://devblogs.microsoft.com/typescript/feed/"
+      limit: 10
+      enabled: true
+
+    - name: "Node.js Blog"
+      url: "https://nodejs.org/en/feed/blog.xml"
+      limit: 10
+      enabled: true
+
+    - name: "V8 Blog"
+      url: "https://v8.dev/blog.atom"
+      limit: 10
+      enabled: true
+
+    - name: "Rust Blog"
+      url: "https://blog.rust-lang.org/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "This Week in Rust"
+      url: "https://this-week-in-rust.org/atom.xml"
+      limit: 10
+      enabled: true
+
+    - name: "JuliaLang Blog"
+      url: "https://julialang.org/blog/index.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Elixir Lang Blog"
+      url: "https://elixir-lang.org/blog/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Fly.io Blog (Engineering)"
+      url: "https://fly.io/blog/rss.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Kubernetes Blog"
+      url: "https://kubernetes.io/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Docker Blog"
+      url: "https://www.docker.com/blog/feed/"
+      limit: 10
+      enabled: true
+
+    - name: "Cloudflare Blog"
+      url: "https://blog.cloudflare.com/rss/"
+      limit: 10
+      enabled: true
+
+    - name: "NVIDIA Developer Blog"
+      url: "https://developer.nvidia.com/blog/feed/"
+      limit: 10
+      enabled: true
+
+    - name: "Postgres Weekly"
+      url: "https://postgresweekly.com/rss"
+      limit: 10
+      enabled: true
+
+    - name: "SQLite Chronology"
+      url: "https://www.sqlite.org/chronology.rss"
+      limit: 10
+      enabled: true
+
+    - name: "JavaScript Weekly"
+      url: "https://javascriptweekly.com/rss"
+      limit: 10
+      enabled: true
+
+    - name: "React Status"
+      url: "https://react.statuscode.com/rss"
+      limit: 10
+      enabled: true
+
+    - name: "Papers with Code (Latest)"
+      url: "https://paperswithcode.com/feeds/latest"
+      limit: 10
+      enabled: true
+
+    - name: "TensorFlow Blog"
+      url: "https://blog.tensorflow.org/feeds/posts/default"
+      limit: 10
+      enabled: true
+
+    - name: "PyTorch Blog"
+      url: "https://pytorch.org/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "LWN.net (Kernel/OSS)"
+      url: "https://lwn.net/headlines/newrss"
+      limit: 10
+      enabled: true
+
+    - name: "Planet Emacslife"
+      url: "https://planet.emacslife.com/atom.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Sacha Chua - Emacs News"
+      url: "https://sachachua.com/blog/category/emacs-news/feed/"
+      limit: 10
+      enabled: true
+
+  # Low-frequency sources (personal blogs, specialized content)
+  # These sources publish occasionally but with high-quality content
+  low_frequency:
+    - name: "Martin Fowler"
+      url: "https://martinfowler.com/feed.xml"
+      limit: 5
+      enabled: true
+
+    # 修正命名：clojure.org 官方新闻（之前误写为 Clojure Gazette）
+    - name: "Clojure.org News"
+      url: "https://clojure.org/feed.xml"
+      limit: 5
+      enabled: true
+
+    - name: "Lambda the Ultimate"
+      url: "http://lambda-the-ultimate.org/rss.xml"
+      limit: 5
+      enabled: true
+
+    - name: "Overreacted (Dan Abramov)"
+      url: "https://overreacted.io/rss.xml"
+      limit: 5
+      enabled: true
+
+    - name: "Kent C. Dodds"
+      url: "https://kentcdodds.com/blog/rss.xml"
+      limit: 5
+      enabled: true
+
+    - name: "OpenAI Blog"
+      url: "https://openai.com/blog/rss.xml"
+      limit: 5
+      enabled: true
+
+    - name: "The Batch (DeepLearning.AI)"
+      url: "https://www.deeplearning.ai/the-batch/feed/"
+      limit: 5
+      enabled: true
+
+    - name: "Import AI Newsletter"
+      url: "https://importai.net/feed"
+      limit: 5
+      enabled: true
+
+    - name: "Andrej Karpathy's Blog"
+      url: "https://karpathy.blog/rss.xml"
+      limit: 5
+      enabled: true
+
+    - name: "Sebastian Raschka"
+      url: "https://magazine.sebastianraschka.com/feed"
+      limit: 5
+      enabled: true
+
+    - name: "Bartosz Milewski (FP/Cat)"
+      url: "http://bartoszmilewski.com/feed/"
+      limit: 5
+      enabled: true
+
+    # arXiv（按学科拆分，偶发爆量，交给 LLM 去筛）
+    - name: "arXiv cs.CL (NLP)"
+      url: "http://export.arxiv.org/rss/cs.CL"
+      limit: 10
+      enabled: true
+
+    - name: "arXiv cs.LG (ML)"
+      url: "http://export.arxiv.org/rss/cs.LG"
+      limit: 10
+      enabled: true
+
+    - name: "arXiv cs.IR (IR/RAG)"
+      url: "http://export.arxiv.org/rss/cs.IR"
+      limit: 10
+      enabled: true
+
+# Global settings
+settings:
+  # Default limit if not specified for a feed
+  default_limit: 10
+
+  # Timeout for RSS feed requests (seconds)
+  request_timeout: 30
+
+  # Whether to skip disabled feeds
+  skip_disabled: true
+
+  # —— Optional tuning (your scraper can ignore unknown fields) ——
+  # Max concurrent requests (to keep polite scraping)
+  max_concurrency: 6
+
+  # Retry policy
+  retry:
+    max_retries: 2
+    backoff_seconds: 2
+
+  # Conditional request caching
+  http_cache:
+    use_etag: true
+    use_last_modified: true
+
+  # Dedupe articles by (url|title|url+title|content_hash)
+  dedupe_by: "url"
+
+  # Basic UA to avoid some feeds blocking default clients
+  user_agent: "ReadingBot/1.0 (+https://example.com)"
+
+# Classification system for LLM-based categorization
+classification:
+  # Available categories in priority order (for conflict resolution)
+  categories:
+    - name: "AI 研究与论文速览"
+      description: "论文/方法/基准/数据集、研究导向的新发现与理论、arXiv/学术博客/研究团队"
+      keywords: ["arXiv", "benchmark", "dataset", "ablation", "theory", "SOTA", "proof", "analysis"]
+      priority: 1
+
+    - name: "深度学习与 LLM 工程"
+      description: "训练/微调/对齐、推理与服务、量化与加速、RAG/Agents、评测与应用落地"
+      keywords: ["PyTorch", "TensorFlow", "Hugging Face", "LoRA", "quantization", "inference", "RAG", "embedding", "agent", "eval"]
+      priority: 2
+
+    - name: "数据库与数据工程"
+      description: "数据库内核/索引/查询优化、事务/复制、OLTP/OLAP、缓存、数据管线与治理"
+      keywords: ["Postgres", "SQLite", "Redis", "WAL", "MVCC", "索引", "分区", "CDC", "ETL", "ELT", "数据质量"]
+      priority: 3
+
+    - name: "云原生与运维平台"
+      description: "容器与编排、服务治理、可观测性、网络/边缘、平台工程、部署与运维最佳实践"
+      keywords: ["Docker", "Kubernetes", "Helm", "Service Mesh", "Ingress", "Observability", "SRE", "eBPF", "边缘计算"]
+      priority: 4
+
+    - name: "Rust 与系统工程"
+      description: "Rust 语言与生态、并发/内存安全、Linux/内核/底层性能、编译器与系统编程"
+      keywords: ["borrow", "ownership", "unsafe", "no_std", "tokio", "内核", "eBPF", "性能分析"]
+      priority: 5
+
+    - name: "JavaScript / TypeScript / Node.js"
+      description: "JS/TS 语言与编译器、Node/Bun/Deno 运行时、V8/tsc、包管理与构建工具"
+      keywords: ["TypeScript", "tsc", "V8", "Node", "npm", "pnpm", "Bun", "Deno", "ES提案", "AST", "构建链"]
+      priority: 6
+
+    - name: "前端与 Web 平台"
+      description: "浏览器平台能力、HTML/CSS、性能与可访问性、SSR/边缘渲染、UI/设计实现"
+      keywords: ["React", "Next", "CSS", "Tailwind", "设计系统", "A11y", "Web APIs", "性能", "SSR", "Edge Rendering"]
+      priority: 7
+
+    - name: "Python 生态"
+      description: "Python 语言、标准库/PEP、常用库与工程实践（FastAPI、Poetry、性能、打包/部署）"
+      keywords: ["PEP", "CPython", "PyPI", "FastAPI", "uv", "Poetry", "typing", "性能优化"]
+      priority: 8
+
+    - name: "函数式与 Lisp/Clojure 家族"
+      description: "FP 思想与范式、Clojure/ClojureScript、Scheme/Lisp、宏、不可变、并发模型"
+      keywords: ["immutability", "macro", "transducer", "STM", "REPL", "Clojure", "Scheme", "Lisp"]
+      priority: 9
+
+    - name: "人物与思想 / 架构与文化"
+      description: "知名作者长文、工程哲学、架构演进与案例复盘、团队文化与方法论"
+      keywords: ["principles", "culture", "architecture", "retrospective", "postmortem", "career", "leadership"]
+      priority: 10
+
+    - name: "精选与综合"
+      description: "多源汇总、每周刊/周报、榜单、社区热帖精选、通识型快讯"
+      keywords: ["weekly", "status", "digest", "roundup", "top", "trending", "newsletter", "汇总"]
+      priority: 11
+
+    - name: "Other"
+      description: "无法明确归属或跨域过度；应保持低占比，并定期回溯优化边界"
+      keywords: []
+      priority: 12
+
+  # LLM prompt template for classification
+  prompt_template: |
+    你是一个技术文章分类专家。请根据文章标题和内容，从以下分类中选择一个最合适的类别。
+
+    **判定准则：**
+    - 若内容以论文/基准/理论为主，选"AI 研究与论文速览"
+    - 若以系统实现/部署/优化为主，选"深度学习与 LLM 工程"
+    - 框架 UI/浏览器选"前端与 Web 平台"，JS/TS 语言/Node 运行时选"JavaScript / TypeScript / Node.js"
+    - 不能归类时才选"Other"
+    - 只输出一个类别名称
+
+    **可选分类：**
+    {categories_list}
+
+    **文章标题：** {title}
+    **文章内容：** {content}
+
+    请直接输出最合适的分类名称：
