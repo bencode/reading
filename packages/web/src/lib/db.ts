@@ -1,7 +1,7 @@
 import knex, { Knex } from 'knex'
 import path from 'path'
 
-const DB_PATH = path.resolve(process.cwd(), '../../data', 'reading.db')
+const DB_PATH = process.env.DATABASE_PATH || path.resolve(process.cwd(), '../../data', 'reading.db')
 
 declare global {
   var __app_db: Knex | undefined
