@@ -218,6 +218,56 @@ sudo crontab -e
 tail -f /var/log/reading-scraper.log
 ```
 
+## 💾 Data Management
+
+The application uses SQLite database with bind mount for easy data access and backup.
+
+### **Database Location**
+- **Host**: `./data/reading.db`
+- **Container**: `/app/data/reading.db`
+- **Direct Access**: Your database is always accessible in the local `data/` directory
+
+### **Data Management Commands**
+
+```bash
+# Database backup
+./data-manager.sh backup                    # Create timestamped backup
+./data-manager.sh backup my_backup.db       # Create named backup
+
+# Database restore
+./data-manager.sh restore backup_20240101_120000.db
+
+# Database export (SQL dump)
+./data-manager.sh export > database_dump.sql
+
+# Database information
+./data-manager.sh info
+
+# Run migrations
+./data-manager.sh migrate
+```
+
+### **Migration from Existing Data**
+
+If you have existing `data/reading.db`:
+1. **Keep your current data** - No migration needed with bind mount
+2. **Backup first**: `./data-manager.sh backup`
+3. **Deploy**: `./deploy.sh`
+4. **Your data persists** - Container uses your existing database
+
+### **Backup Strategy**
+
+```bash
+# Daily backup (add to crontab)
+0 2 * * * cd /path/to/reading && ./data-manager.sh backup >> /var/log/reading-backup.log 2>&1
+
+# Manual backup before updates
+./data-manager.sh backup before_update_$(date +%Y%m%d)
+
+# Export for migration
+./data-manager.sh export > reading_export_$(date +%Y%m%d).sql
+```
+
 ## 🛠️ Development
 
 ### Project Structure
