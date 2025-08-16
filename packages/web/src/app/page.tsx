@@ -274,12 +274,36 @@ export default function Home() {
             <Card key={article.id} className="flex flex-col h-full hover:shadow-lg transition-shadow">
               <CardHeader className="flex-none">
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <CardTitle className="text-lg leading-tight line-clamp-3">
+                  <CardTitle className="text-lg leading-tight">
                     {article.title}
                   </CardTitle>
-                  {!article.is_read && (
-                    <Badge variant="secondary" className="shrink-0">New</Badge>
-                  )}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!article.is_read && (
+                      <Badge variant="secondary">New</Badge>
+                    )}
+                    {/* Delete Button in top-right corner */}
+                    {article.deleted ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleDeleted(article.id, article.deleted)}
+                        className="p-1 text-green-500 hover:text-green-700 hover:bg-green-50"
+                        title="Restore article"
+                      >
+                        ↻
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleDeleted(article.id, article.deleted)}
+                        className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50"
+                        title="Delete article"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-1 text-sm text-gray-600 mb-2">
                   <Badge variant="outline">{article.source_name}</Badge>
@@ -297,7 +321,7 @@ export default function Home() {
                 )}
               </CardHeader>
               <CardContent className="flex-1 flex flex-col">
-                <p className="text-gray-700 mb-4 flex-1 line-clamp-4">{article.summary}</p>
+                <p className="text-gray-700 mb-4 flex-1 leading-relaxed">{article.summary}</p>
                 
                 {/* Rating Component */}
                 {article.rating !== null && (
@@ -361,27 +385,6 @@ export default function Home() {
                           />
                         ))}
                       </div>
-                    )}
-                    
-                    {/* Delete Button - show restore when article is deleted, trash when not deleted */}
-                    {article.deleted ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleDeleted(article.id, article.deleted)}
-                        className="p-2 text-green-500 hover:text-green-700 hover:bg-green-50"
-                      >
-                        Restore
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleDeleted(article.id, article.deleted)}
-                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </Button>
                     )}
                   </div>
 
