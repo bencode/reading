@@ -1,7 +1,7 @@
 'use client';
 
 import { Article, Category, PaginatedResponse } from '../services/articleService';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/pagination';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, logout } = useAuth();
@@ -540,5 +540,17 @@ function PaginationComponent({
         </PaginationItem>
       </PaginationContent>
     </Pagination>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-lg">Loading...</div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
