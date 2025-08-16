@@ -3,7 +3,6 @@ node_modules
 .DS_Store
 \.venv/
 data/
-data/
 __pycache__/
 .env
 briefings/
