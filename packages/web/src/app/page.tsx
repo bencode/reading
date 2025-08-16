@@ -16,10 +16,12 @@ import {
   PaginationPrevious,
   PaginationEllipsis
 } from '@/components/ui/pagination';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isAuthenticated, logout } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -119,6 +121,10 @@ export default function Home() {
   };
 
   const handleToggleStatus = async (articleId: number, field: string, currentStatus: boolean) => {
+    if (!isAuthenticated) {
+      return; // Don't allow actions if not authenticated
+    }
+    
     const newStatus = !currentStatus;
     const article = articles.find(a => a.id === articleId);
     
@@ -141,10 +147,12 @@ export default function Home() {
       'deleted': 'toggle_deleted'
     };
 
+    const token = localStorage.getItem('auth_token');
     const response = await fetch(`/api/articles/${articleId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({ action: actionMap[field] }),
     });
@@ -188,6 +196,10 @@ export default function Home() {
   };
 
   const handleRateArticle = async (articleId: number, rating: number | null) => {
+    if (!isAuthenticated) {
+      return; // Don't allow actions if not authenticated
+    }
+
     // Optimistic update
     setArticles(articles.map(article => 
       article.id === articleId 
@@ -195,10 +207,12 @@ export default function Home() {
         : article
     ));
 
+    const token = localStorage.getItem('auth_token');
     const response = await fetch(`/api/articles/${articleId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({ action: 'rate', rating }),
     });
@@ -216,9 +230,21 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-2">Reading List</h1>
-          <p className="text-lg text-gray-600">Discover and organize your articles</p>
+        {/* Header with authentication status */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-2">Reading List</h1>
+            <p className="text-lg text-gray-600">Discover and organize your articles</p>
+          </div>
+          
+          {isAuthenticated && (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-green-600">✓ Authenticated</span>
+              <Button variant="outline" size="sm" onClick={logout}>
+                Logout
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Filter Buttons */}
@@ -281,8 +307,8 @@ export default function Home() {
                     {!article.is_read && (
                       <Badge variant="secondary">New</Badge>
                     )}
-                    {/* Delete Button in top-right corner */}
-                    {article.deleted ? (
+                    {/* Delete Button in top-right corner - only show if authenticated */}
+                    {isAuthenticated && (article.deleted ? (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -302,7 +328,7 @@ export default function Home() {
                       >
                         <TrashIcon className="w-4 h-4" />
                       </Button>
-                    )}
+                    ))}
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1 text-sm text-gray-600 mb-2">
@@ -323,8 +349,8 @@ export default function Home() {
               <CardContent className="flex-1 flex flex-col">
                 <p className="text-gray-700 mb-4 flex-1 leading-relaxed">{article.summary}</p>
                 
-                {/* Rating Component */}
-                {article.rating !== null && (
+                {/* Rating Component - only show if authenticated */}
+                {isAuthenticated && article.rating !== null && (
                   <div className="flex items-center gap-1 mb-3">
                     <span className="text-sm text-gray-600">Rating:</span>
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -360,22 +386,24 @@ export default function Home() {
                       </a>
                     </Button>
                     
-                    {/* Star Button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleToggleStarred(article.id, article.starred)}
-                      className="p-2"
-                    >
-                      {article.starred ? (
-                        <StarFilledIcon className="w-4 h-4 text-yellow-400" />
-                      ) : (
-                        <StarIcon className="w-4 h-4 text-gray-400" />
-                      )}
-                    </Button>
+                    {/* Star Button - only show if authenticated */}
+                    {isAuthenticated && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleStarred(article.id, article.starred)}
+                        className="p-2"
+                      >
+                        {article.starred ? (
+                          <StarFilledIcon className="w-4 h-4 text-yellow-400" />
+                        ) : (
+                          <StarIcon className="w-4 h-4 text-gray-400" />
+                        )}
+                      </Button>
+                    )}
                     
-                    {/* Rating Button */}
-                    {article.rating === null && (
+                    {/* Rating Button - only show if authenticated and no rating yet */}
+                    {isAuthenticated && article.rating === null && (
                       <div className="flex items-center gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <StarIcon
@@ -388,14 +416,17 @@ export default function Home() {
                     )}
                   </div>
 
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => handleToggleReadStatus(article.id, article.is_read)}
-                    className={article.is_read ? "text-green-600 hover:text-green-700" : "text-gray-500 hover:text-gray-700"}
-                  >
-                    {article.is_read ? "Mark as Unread" : "Mark as Read"}
-                  </Button>
+                  {/* Read Status Button - only show if authenticated */}
+                  {isAuthenticated && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleToggleReadStatus(article.id, article.is_read)}
+                      className={article.is_read ? "text-green-600 hover:text-green-700" : "text-gray-500 hover:text-gray-700"}
+                    >
+                      {article.is_read ? "Mark as Unread" : "Mark as Read"}
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

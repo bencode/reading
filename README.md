@@ -59,12 +59,38 @@ pip install -r requirements.txt
 
 ### 3. Environment Setup
 
-Create environment configuration for the Python backend:
-
+**Python Backend Configuration:**
 ```bash
 # packages/tasks/.env
 LLM_API_ENDPOINT=https://api.openai.com/v1/chat/completions
 LLM_API_KEY=your_api_key_here
+```
+
+**Web Frontend Authentication:**
+```bash
+# packages/web/.env.local
+cd packages/web
+cp .env.example .env.local
+```
+
+Edit `.env.local` with your authentication settings:
+```bash
+# Generate secure tokens
+ACCESS_TOKEN=$(openssl rand -hex 16)    # 32 characters
+JWT_SECRET=$(openssl rand -base64 32)   # 44 characters
+
+# Generate password hash
+node generate-hash.js your-admin-password
+```
+
+Complete `.env.local` example:
+```env
+ACCESS_TOKEN=22d3ccb8be04566879114f0874b2b9e5
+JWT_SECRET=t9qBY2+kjIzXFEcN/gpmV0WlvmO8WGKCpkKbtRmzmJ2E0iSN
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD_HASH=$2b$10$XoSv6ehod3rwSHf0MOnblu14hq2LLSyfSuZaI2Me7UCKSUaHnJD/K
+DATABASE_PATH=../../data/reading.db
+NODE_ENV=development
 ```
 
 ### 4. Database Setup
@@ -89,6 +115,26 @@ python scraper.py
 ```
 
 Visit `http://localhost:3000` to access the application!
+
+## 🔐 Authentication System
+
+The application supports two access modes for secure deployment:
+
+### **Public Access (Read-Only)**
+- Browse and view all articles
+- Use category and status filters
+- No editing capabilities
+
+### **Authenticated Access (Full Control)**
+1. **Access Login Page**: `http://localhost:3000/auth?token=YOUR_ACCESS_TOKEN`
+2. **Enter Admin Password**: Use the password you configured
+3. **Full Features**: Star articles, mark as read, rate, delete/restore
+
+### **Deployment Security**
+- **ACCESS_TOKEN**: Controls who can access the login page
+- **JWT_SECRET**: Secures user sessions
+- **Password Hash**: Protects admin authentication
+- All editing operations require authentication
 
 ## 🛠️ Development
 
