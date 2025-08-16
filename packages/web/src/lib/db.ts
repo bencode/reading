@@ -10,7 +10,7 @@ declare global {
 export function getDb(): Knex {
   if (!global.__app_db) {
     global.__app_db = knex({
-      client: 'sqlite3',
+      client: 'better-sqlite3',
       connection: {
         filename: DB_PATH
       },

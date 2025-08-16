@@ -1,14 +1,6 @@
 # Use official Node.js runtime as base image
 FROM node:22-slim
 
-# Install dependencies needed for sqlite3 compilation
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    python3 \
-    sqlite3 \
-    libsqlite3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 # Install pnpm
 RUN npm install -g pnpm
 
