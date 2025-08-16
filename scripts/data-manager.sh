@@ -11,9 +11,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Script directory
+# Script directory and project root
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-DATA_DIR="$SCRIPT_DIR/data"
+PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." &> /dev/null && pwd )"
+DATA_DIR="$PROJECT_ROOT/data"
 DB_FILE="$DATA_DIR/reading.db"
 
 show_help() {
@@ -144,11 +145,12 @@ show_info() {
 migrate_database() {
     echo -e "${YELLOW}🔄 Running database migrations...${NC}"
     
-    if command -v docker-compose &> /dev/null && [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
+    if command -v docker-compose &> /dev/null && [ -f "$PROJECT_ROOT/docker-compose.yml" ]; then
+        cd "$PROJECT_ROOT"
         docker-compose run --rm db_init
     else
         echo -e "${YELLOW}Docker not available, running local migration...${NC}"
-        cd "$SCRIPT_DIR/packages/tasks"
+        cd "$PROJECT_ROOT/packages/tasks"
         yoyo apply --batch
     fi
     

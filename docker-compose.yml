@@ -14,7 +14,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./data:/app/data  # 绑定挂载本地data目录
+      - ./data:/app/data
     depends_on:
       - db_init
     restart: unless-stopped
@@ -32,7 +32,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./data:/app/data  # 绑定挂载本地data目录
+      - ./data:/app/data
     networks:
       - reading_network
 

@@ -152,7 +152,7 @@ The application supports two access modes for secure deployment:
 
 2. **Deploy with One Command**:
    ```bash
-   ./deploy.sh
+   ./scripts/deploy.sh
    ```
 
 3. **Access Your Application**:
@@ -169,7 +169,7 @@ docker-compose up -d
 docker-compose logs -f
 
 # Run article scraper manually
-./run-scraper.sh
+./scripts/run-scraper.sh
 
 # Stop services
 docker-compose down
@@ -203,16 +203,16 @@ Set up automatic article collection with cron:
 sudo crontab -e
 
 # Add scraper schedule (every 6 hours)
-0 */6 * * * cd /path/to/reading && ./run-scraper.sh >> /var/log/reading-scraper.log 2>&1
+0 */6 * * * cd /path/to/reading && ./scripts/run-scraper.sh >> /var/log/reading-scraper.log 2>&1
 
 # Or run daily at 6 AM and 6 PM
-0 6,18 * * * cd /path/to/reading && ./run-scraper.sh >> /var/log/reading-scraper.log 2>&1
+0 6,18 * * * cd /path/to/reading && ./scripts/run-scraper.sh >> /var/log/reading-scraper.log 2>&1
 ```
 
 **Manual scraper execution:**
 ```bash
 # Run scraper immediately
-./run-scraper.sh
+./scripts/run-scraper.sh
 
 # Check scraper logs
 tail -f /var/log/reading-scraper.log
@@ -231,41 +231,41 @@ The application uses SQLite database with bind mount for easy data access and ba
 
 ```bash
 # Database backup
-./data-manager.sh backup                    # Create timestamped backup
-./data-manager.sh backup my_backup.db       # Create named backup
+./scripts/data-manager.sh backup                    # Create timestamped backup
+./scripts/data-manager.sh backup my_backup.db       # Create named backup
 
 # Database restore
-./data-manager.sh restore backup_20240101_120000.db
+./scripts/data-manager.sh restore backup_20240101_120000.db
 
 # Database export (SQL dump)
-./data-manager.sh export > database_dump.sql
+./scripts/data-manager.sh export > database_dump.sql
 
 # Database information
-./data-manager.sh info
+./scripts/data-manager.sh info
 
 # Run migrations
-./data-manager.sh migrate
+./scripts/data-manager.sh migrate
 ```
 
 ### **Migration from Existing Data**
 
 If you have existing `data/reading.db`:
 1. **Keep your current data** - No migration needed with bind mount
-2. **Backup first**: `./data-manager.sh backup`
-3. **Deploy**: `./deploy.sh`
+2. **Backup first**: `./scripts/data-manager.sh backup`
+3. **Deploy**: `./scripts/deploy.sh`
 4. **Your data persists** - Container uses your existing database
 
 ### **Backup Strategy**
 
 ```bash
 # Daily backup (add to crontab)
-0 2 * * * cd /path/to/reading && ./data-manager.sh backup >> /var/log/reading-backup.log 2>&1
+0 2 * * * cd /path/to/reading && ./scripts/data-manager.sh backup >> /var/log/reading-backup.log 2>&1
 
 # Manual backup before updates
-./data-manager.sh backup before_update_$(date +%Y%m%d)
+./scripts/data-manager.sh backup before_update_$(date +%Y%m%d)
 
 # Export for migration
-./data-manager.sh export > reading_export_$(date +%Y%m%d).sql
+./scripts/data-manager.sh export > reading_export_$(date +%Y%m%d).sql
 ```
 
 ## 🛠️ Development

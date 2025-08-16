@@ -9,9 +9,10 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Get script directory
+# Get script directory and go to project root
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-cd "$SCRIPT_DIR"
+PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." &> /dev/null && pwd )"
+cd "$PROJECT_ROOT"
 
 # Log with timestamp
 log() {
@@ -22,7 +23,7 @@ log "🕷️ Starting article scraper..."
 
 # Check if project directory and docker-compose.yml exist
 if [ ! -f "docker-compose.yml" ]; then
-    log "${RED}❌ Error: docker-compose.yml not found in $SCRIPT_DIR${NC}"
+    log "${RED}❌ Error: docker-compose.yml not found in $PROJECT_ROOT${NC}"
     exit 1
 fi
 
