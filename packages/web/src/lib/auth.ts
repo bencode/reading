@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
 // Configuration - In production, use environment variables
@@ -14,7 +14,7 @@ export const AUTH_CONFIG = {
   ADMIN_PASSWORD_HASH: process.env.ADMIN_PASSWORD_HASH || bcrypt.hashSync('admin123', 10),
   
   // Token expiry
-  TOKEN_EXPIRY: '7d',
+  TOKEN_EXPIRY: '7d' as const,
 };
 
 export function verifyPassword(password: string, hash: string): boolean {
@@ -22,16 +22,17 @@ export function verifyPassword(password: string, hash: string): boolean {
 }
 
 export function generateToken(username: string): string {
-  return jwt.sign(
-    { username, isAuthenticated: true },
-    AUTH_CONFIG.JWT_SECRET,
-    { expiresIn: AUTH_CONFIG.TOKEN_EXPIRY }
-  );
+  const payload = { username, isAuthenticated: true };
+  const secret = AUTH_CONFIG.JWT_SECRET;
+  const options: SignOptions = { expiresIn: AUTH_CONFIG.TOKEN_EXPIRY };
+  
+  return jwt.sign(payload, secret, options);
 }
 
 export function verifyToken(token: string): { username: string; isAuthenticated: boolean } | null {
   try {
-    return jwt.verify(token, AUTH_CONFIG.JWT_SECRET) as any;
+    const decoded = jwt.verify(token, AUTH_CONFIG.JWT_SECRET);
+    return decoded as { username: string; isAuthenticated: boolean };
   } catch {
     return null;
   }
