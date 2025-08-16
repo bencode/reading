@@ -1,6 +1,14 @@
 # Use official Node.js runtime as base image
 FROM node:22-alpine AS base
 
+# Install dependencies needed for sqlite3 compilation
+RUN apk add --no-cache \
+    build-base \
+    python3 \
+    make \
+    g++ \
+    sqlite-dev
+
 # Install pnpm
 RUN npm install -g pnpm
 
@@ -13,7 +21,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 # Copy package.json files for dependency installation
 COPY packages/web/package.json ./packages/web/
 
-# Install dependencies
+# Install dependencies (this will compile sqlite3 native bindings)
 RUN pnpm install --frozen-lockfile
 
 # Build stage
@@ -34,6 +42,9 @@ RUN pnpm build
 # Production stage
 FROM node:22-alpine AS runner
 
+# Install runtime dependencies for sqlite3
+RUN apk add --no-cache sqlite
+
 # Install pnpm
 RUN npm install -g pnpm
 
@@ -44,16 +55,16 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy built application
+# Copy built application and compiled node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/packages/web/.next ./packages/web/.next
 COPY --from=builder --chown=nextjs:nodejs /app/packages/web/public ./packages/web/public
 COPY --from=builder /app/packages/web/package.json ./packages/web/
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/node_modules ./node_modules
 
-# Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+# Note: We're copying the already compiled node_modules from builder stage
 
 # Create data directory for database
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
