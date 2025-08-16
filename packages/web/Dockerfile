@@ -1,13 +1,13 @@
 # Use official Node.js runtime as base image
-FROM node:22-alpine AS base
+FROM node:22-slim AS base
 
 # Install dependencies needed for sqlite3 compilation
-RUN apk add --no-cache \
-    build-base \
+RUN apt-get update && apt-get install -y \
+    build-essential \
     python3 \
-    make \
-    g++ \
-    sqlite-dev
+    sqlite3 \
+    libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm
 RUN npm install -g pnpm
@@ -40,10 +40,12 @@ RUN cp .env.example .env.local 2>/dev/null || true
 RUN pnpm build
 
 # Production stage
-FROM node:22-alpine AS runner
+FROM node:22-slim AS runner
 
 # Install runtime dependencies for sqlite3
-RUN apk add --no-cache sqlite
+RUN apt-get update && apt-get install -y \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm
 RUN npm install -g pnpm
@@ -63,9 +65,9 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages/web/node_modules ./packages/web/node_modules
 
-# Note: We're copying the already compiled node_modules from builder stage
+# Copy package-specific node_modules if they exist
+COPY --from=builder /app/packages/web/node_modules ./packages/web/node_modules
 
 # Create data directory for database
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
