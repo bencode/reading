@@ -2,9 +2,8 @@ node_modules
 .next
 .DS_Store
 \.venv/
-\n/data/
+data/
 data/
 __pycache__/
-
 .env
 briefings/
