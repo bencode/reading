@@ -136,6 +136,72 @@ The application supports two access modes for secure deployment:
 - **Password Hash**: Protects admin authentication
 - All editing operations require authentication
 
+## 🐳 Docker Deployment
+
+### **Quick Start with Docker**
+
+1. **Clone and Configure**:
+   ```bash
+   git clone https://github.com/yourusername/reading.git
+   cd reading
+   
+   # Configure environment
+   cp .env.example .env
+   # Edit .env with your settings (see Environment Setup section above)
+   ```
+
+2. **Deploy with One Command**:
+   ```bash
+   ./deploy.sh
+   ```
+
+3. **Access Your Application**:
+   - **Public Access**: `http://localhost:3000`
+   - **Admin Access**: `http://localhost:3000/auth?token=YOUR_ACCESS_TOKEN`
+
+### **Manual Docker Commands**
+
+```bash
+# Build and start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Run article scraper manually
+docker-compose --profile scraper up scraper
+
+# Stop services
+docker-compose down
+
+# Update and restart
+docker-compose down && docker-compose build --no-cache && docker-compose up -d
+```
+
+### **Docker Architecture**
+
+- **Web Service**: Next.js frontend (Port 3000)
+- **DB Init**: Database initialization with migrations
+- **Scraper**: Python article scraping (on-demand)
+- **Volume**: Persistent SQLite database storage
+- **Network**: Isolated container communication
+
+### **Production Deployment**
+
+1. **Server Setup**: Install Docker and Docker Compose
+2. **Environment**: Configure `.env` with production values
+3. **SSL/Reverse Proxy**: Use nginx or Caddy for HTTPS
+4. **Cron Jobs**: Schedule article scraping
+5. **Monitoring**: Set up log aggregation and health checks
+
+### **Scheduled Article Scraping**
+
+Add to crontab for regular article updates:
+```bash
+# Run scraper every 6 hours
+0 */6 * * * cd /path/to/reading && docker-compose --profile scraper up scraper
+```
+
 ## 🛠️ Development
 
 ### Project Structure

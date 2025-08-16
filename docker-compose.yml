@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Web frontend service
+  web:
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_PATH=/app/data/reading.db
+    env_file:
+      - .env
+    volumes:
+      - reading_data:/app/data
+    depends_on:
+      - db_init
+    restart: unless-stopped
+    networks:
+      - reading_network
+
+  # Database initialization service
+  db_init:
+    build:
+      context: packages/tasks
+      dockerfile: Dockerfile
+    command: ["yoyo", "apply", "--batch"]
+    environment:
+      - DATABASE_PATH=/app/data/reading.db
+    env_file:
+      - .env
+    volumes:
+      - reading_data:/app/data
+    networks:
+      - reading_network
+
+  # Article scraper service (runs periodically)
+  scraper:
+    build:
+      context: packages/tasks
+      dockerfile: Dockerfile
+    command: ["python", "scraper.py"]
+    environment:
+      - DATABASE_PATH=/app/data/reading.db
+    env_file:
+      - .env
+    volumes:
+      - reading_data:/app/data
+    depends_on:
+      - db_init
+    restart: "no"  # Run once, use cron for scheduling
+    networks:
+      - reading_network
+    profiles:
+      - scraper  # Optional profile, run with: docker-compose --profile scraper up
+
+volumes:
+  reading_data:
+    driver: local
+
+networks:
+  reading_network:
+    driver: bridge
