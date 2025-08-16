@@ -230,21 +230,20 @@ function HomeContent() {
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        {/* Header with authentication status */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="text-center flex-1">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-2">Reading List</h1>
-            <p className="text-lg text-gray-600">Discover and organize your articles</p>
+        {/* Authentication status - fixed position */}
+        {isAuthenticated && (
+          <div className="fixed top-4 right-4 z-10 flex items-center gap-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-sm border">
+            <span className="text-sm text-green-600">✓ Authenticated</span>
+            <Button variant="outline" size="sm" onClick={logout}>
+              Logout
+            </Button>
           </div>
-          
-          {isAuthenticated && (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-green-600">✓ Authenticated</span>
-              <Button variant="outline" size="sm" onClick={logout}>
-                Logout
-              </Button>
-            </div>
-          )}
+        )}
+
+        {/* Header - properly centered */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-2">Reading List</h1>
+          <p className="text-lg text-gray-600">Discover and organize your articles</p>
         </div>
 
         {/* Filter Buttons */}
