@@ -42,9 +42,12 @@ RUN pnpm build
 # Production stage
 FROM node:22-slim AS runner
 
-# Install runtime dependencies for sqlite3
+# Install runtime dependencies and build tools for sqlite3
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3 \
     sqlite3 \
+    libsqlite3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm
@@ -57,17 +60,16 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy built application and compiled node_modules
+# Copy built application
 COPY --from=builder --chown=nextjs:nodejs /app/packages/web/.next ./packages/web/.next
 COPY --from=builder --chown=nextjs:nodejs /app/packages/web/public ./packages/web/public
 COPY --from=builder /app/packages/web/package.json ./packages/web/
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/pnpm-lock.yaml ./
-COPY --from=builder /app/node_modules ./node_modules
 
-# Copy package-specific node_modules if they exist
-COPY --from=builder /app/packages/web/node_modules ./packages/web/node_modules
+# Install production dependencies fresh (this will rebuild sqlite3 for runtime environment)
+RUN pnpm install --prod --frozen-lockfile
 
 # Create data directory for database
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
