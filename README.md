@@ -169,7 +169,7 @@ docker-compose up -d
 docker-compose logs -f
 
 # Run article scraper manually
-docker-compose --profile scraper up scraper
+./run-scraper.sh
 
 # Stop services
 docker-compose down
@@ -181,25 +181,41 @@ docker-compose down && docker-compose build --no-cache && docker-compose up -d
 ### **Docker Architecture**
 
 - **Web Service**: Next.js frontend (Port 3000)
-- **DB Init**: Database initialization with migrations
-- **Scraper**: Python article scraping (on-demand)
+- **DB Init**: Database initialization with migrations (runs once)
 - **Volume**: Persistent SQLite database storage
 - **Network**: Isolated container communication
+- **Scraper**: External cron-scheduled article collection
 
 ### **Production Deployment**
 
 1. **Server Setup**: Install Docker and Docker Compose
 2. **Environment**: Configure `.env` with production values
 3. **SSL/Reverse Proxy**: Use nginx or Caddy for HTTPS
-4. **Cron Jobs**: Schedule article scraping
+4. **Cron Jobs**: Schedule article scraping with system cron
 5. **Monitoring**: Set up log aggregation and health checks
 
 ### **Scheduled Article Scraping**
 
-Add to crontab for regular article updates:
+Set up automatic article collection with cron:
+
 ```bash
-# Run scraper every 6 hours
-0 */6 * * * cd /path/to/reading && docker-compose --profile scraper up scraper
+# Open crontab editor
+sudo crontab -e
+
+# Add scraper schedule (every 6 hours)
+0 */6 * * * cd /path/to/reading && ./run-scraper.sh >> /var/log/reading-scraper.log 2>&1
+
+# Or run daily at 6 AM and 6 PM
+0 6,18 * * * cd /path/to/reading && ./run-scraper.sh >> /var/log/reading-scraper.log 2>&1
+```
+
+**Manual scraper execution:**
+```bash
+# Run scraper immediately
+./run-scraper.sh
+
+# Check scraper logs
+tail -f /var/log/reading-scraper.log
 ```
 
 ## 🛠️ Development

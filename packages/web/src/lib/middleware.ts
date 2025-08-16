@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 
-export function withAuth(handler: (request: NextRequest) => Promise<NextResponse>) {
-  return async (request: NextRequest) => {
+export function withAuth<T extends any[]>(
+  handler: (request: NextRequest, ...args: T) => Promise<NextResponse>
+) {
+  return async (request: NextRequest, ...args: T) => {
     // Check authentication
     const token = request.cookies.get('auth_token')?.value || 
                   request.headers.get('Authorization')?.replace('Bearer ', '');
@@ -18,6 +20,6 @@ export function withAuth(handler: (request: NextRequest) => Promise<NextResponse
     }
 
     // Call the actual handler if authenticated
-    return handler(request);
+    return handler(request, ...args);
   };
 }
