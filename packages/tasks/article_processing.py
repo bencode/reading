@@ -1,5 +1,6 @@
 """Article processing utilities for scraper."""
 
+import os
 import time
 
 import requests
@@ -8,9 +9,10 @@ from bs4 import BeautifulSoup
 
 def check_article_exists_api(url):
     """Check if article exists via web API."""
-    from scraper import WEB_API_URL  # Avoid circular import
-
-    api_url = f"{WEB_API_URL}/api/articles/check?url={url}"
+    web_api_url = os.getenv("WEB_API_URL")
+    if not web_api_url:
+        raise ValueError("WEB_API_URL environment variable not set")
+    api_url = f"{web_api_url}/api/articles/check?url={url}"
     response = requests.get(api_url, timeout=30)
     if response.status_code == 200:
         return response.json().get("exists", False)
@@ -19,8 +21,9 @@ def check_article_exists_api(url):
 
 def insert_article_api(article, category_name=None, tag_names=None):
     """Insert article via web API."""
-    from scraper import WEB_API_URL  # Avoid circular import
-
+    web_api_url = os.getenv("WEB_API_URL")
+    if not web_api_url:
+        raise ValueError("WEB_API_URL environment variable not set")
     payload = {
         "title": article["title"],
         "original_url": article["link"],
@@ -35,7 +38,7 @@ def insert_article_api(article, category_name=None, tag_names=None):
     if tag_names:
         payload["tag_names"] = tag_names
 
-    response = requests.post(f"{WEB_API_URL}/api/articles", json=payload, timeout=30)
+    response = requests.post(f"{web_api_url}/api/articles", json=payload, timeout=30)
 
     if response.status_code == 201:
         result = response.json()
