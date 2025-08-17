@@ -224,3 +224,107 @@ export async function toggleArticleDeleted(id: number): Promise<boolean> {
   
   return newStatus;
 }
+
+export interface CreateArticleData {
+  title: string;
+  original_url: string;
+  summary: string;
+  source_name: string;
+  published_at: string;
+  category_name?: string;
+  tag_names?: string[];
+}
+
+export async function createArticle(data: CreateArticleData): Promise<{ success: boolean; id?: number; error?: string }> {
+  const db = getDb();
+  
+  // Check if article already exists
+  const existingArticle = await db('articles')
+    .select('id')
+    .where('original_url', data.original_url)
+    .first();
+  
+  if (existingArticle) {
+    return { 
+      success: false, 
+      error: 'Article already exists', 
+      id: existingArticle.id 
+    };
+  }
+
+  const result = await db.transaction(async (trx) => {
+    const [articleId] = await trx('articles').insert({
+      title: data.title,
+      original_url: data.original_url,
+      summary: data.summary,
+      source_name: data.source_name,
+      published_at: data.published_at,
+      is_read: false,
+      starred: false,
+      deleted: false,
+      rating: null
+    });
+
+    if (data.category_name) {
+      let categoryId: number;
+      
+      const existingCategory = await trx('categories')
+        .select('id')
+        .where('name', data.category_name)
+        .first();
+      
+      if (existingCategory) {
+        categoryId = existingCategory.id;
+      } else {
+        const [newCategoryId] = await trx('categories').insert({
+          name: data.category_name
+        });
+        categoryId = newCategoryId;
+      }
+      
+      await trx('article_categories').insert({
+        article_id: articleId,
+        category_id: categoryId
+      });
+    }
+
+    if (data.tag_names && data.tag_names.length > 0) {
+      for (const tagName of data.tag_names) {
+        let tagId: number;
+        
+        const existingTag = await trx('tags')
+          .select('id')
+          .where('name', tagName)
+          .first();
+        
+        if (existingTag) {
+          tagId = existingTag.id;
+        } else {
+          const [newTagId] = await trx('tags').insert({
+            name: tagName
+          });
+          tagId = newTagId;
+        }
+        
+        await trx('article_tags').insert({
+          article_id: articleId,
+          tag_id: tagId
+        });
+      }
+    }
+
+    return { articleId };
+  });
+
+  return { success: true, id: result.articleId };
+}
+
+export async function checkArticleExists(url: string): Promise<boolean> {
+  const db = getDb();
+  const existingArticle = await db('articles')
+    .select('id')
+    .where('original_url', url)
+    .first();
+  
+  return !!existingArticle;
+}

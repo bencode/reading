@@ -98,86 +98,51 @@ def get_or_create_tag(conn, tag_name):
         conn.commit()
         return cursor.lastrowid
 
-def check_article_exists(url):
-    """Checks if an article with the given URL already exists in the database."""
-    conn = sqlite3.connect(DB_PATH, timeout=30.0)
-    cursor = conn.cursor()
-    try:
-        # Set WAL mode for concurrent access
-        cursor.execute("PRAGMA journal_mode = WAL;")
-        cursor.execute("SELECT id FROM articles WHERE original_url = ?", (url,))
-        result = cursor.fetchone()
-        return result is not None
-    except Exception as e:
-        print(f"Error checking if article exists: {e}")
-        return False
-    finally:
-        conn.close()
+# Web API configuration for article insertion
+WEB_API_URL = "http://localhost:3000"
+# WEB_API_URL = os.getenv("WEB_API_URL", False)
 
-def insert_article(article, category_name=None, tag_names=None):
-    """Inserts a single article into the database, avoiding duplicates, and links categories/tags."""
-    max_retries = 3
-    retry_delay = 1  # seconds
-    
-    for attempt in range(max_retries):
-        conn = None
-        try:
-            # Use longer timeout and WAL mode for concurrent access
-            conn = sqlite3.connect(DB_PATH, timeout=60.0)
-            cursor = conn.cursor()
-            
-            # Set WAL mode if not already set
-            cursor.execute("PRAGMA journal_mode = WAL;")
-            
-            # Insert article and get its ID
-            cursor.execute(
-                "INSERT INTO articles (title, original_url, summary, source_name, published_at) VALUES (?, ?, ?, ?, ?)",
-                (article['title'], article['link'], article['summary'], article['source'], article['published_at'])
-            )
-            article_id = cursor.lastrowid
-            conn.commit()
-            print(f"✓ Inserted new article: {article['title']} with ID {article_id}")
-
-            # Link category
-            if category_name:
-                category_id = get_or_create_category(conn, category_name)
-                cursor.execute("INSERT INTO article_categories (article_id, category_id) VALUES (?, ?)", (article_id, category_id))
-                conn.commit()
-                print(f"  └─ Linked to category: {category_name}")
-
-            # Link tags
-            if tag_names:
-                for tag_name in tag_names:
-                    tag_id = get_or_create_tag(conn, tag_name)
-                    cursor.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", (article_id, tag_id))
-                conn.commit()
-                print(f"  └─ Linked to tags: {', '.join(tag_names)}")
-
-            return True  # Successfully inserted
-
-        except sqlite3.IntegrityError as e:
-            print(f"⚠ Article already exists (skipped): {article['title']} - {e}")
-            return False  # Already exists
-        except sqlite3.OperationalError as e:
-            if attempt < max_retries - 1:
-                print(f"⚠ Database busy (attempt {attempt + 1}/{max_retries}): {e}")
-                print(f"  Retrying in {retry_delay} seconds...")
-                time.sleep(retry_delay)
-                retry_delay *= 2  # Exponential backoff
-                continue
-            else:
-                print(f"✗ Database locked or operational error after {max_retries} attempts: {e}")
-                print(f"  Article: {article['title']}")
-                return False
-        except Exception as e:
-            print(f"✗ Error inserting article {article['title']}: {e}")
-            print(f"  Error type: {type(e).__name__}")
-            return False
-        finally:
-            if conn:
-                conn.close()
-    
+def check_article_exists_api(url):
+    """Check if article exists via web API."""
+    api_url = f"{WEB_API_URL}/api/articles/check?url={url}"
+    response = requests.get(api_url, timeout=30)
+    if response.status_code == 200:
+        return response.json().get('exists', False)
     return False
+
+def insert_article_api(article, category_name=None, tag_names=None):
+    """Insert article via web API."""
+    payload = {
+        'title': article['title'],
+        'original_url': article['link'],
+        'summary': article['summary'],
+        'source_name': article['source'],
+        'published_at': article['published_at']
+    }
+    
+    if category_name:
+        payload['category_name'] = category_name
+    
+    if tag_names:
+        payload['tag_names'] = tag_names
+    
+    response = requests.post(f"{WEB_API_URL}/api/articles", json=payload, timeout=30)
+    
+    if response.status_code == 201:
+        result = response.json()
+        print(f"✓ Inserted new article: {article['title']} with ID {result['id']}")
+        if category_name:
+            print(f"  └─ Linked to category: {category_name}")
+        if tag_names:
+            print(f"  └─ Linked to tags: {', '.join(tag_names)}")
+        return True
+    elif response.status_code == 409:
+        print(f"⚠ Article already exists (skipped): {article['title']}")
+        return False
+    else:
+        error_msg = response.json().get('error', 'Unknown error')
+        print(f"✗ Failed to insert article {article['title']}: {error_msg}")
+        return False
 
 def summarize_and_categorize_article(title, content):
     """Summarizes an article and suggests a category and tags using a generic LLM API."""
@@ -372,7 +337,7 @@ def main():
 
             for entry in articles_to_process:
                 # Check if article already exists before processing
-                if check_article_exists(entry.link):
+                if check_article_exists_api(entry.link):
                     skipped_count += 1
                     print(f"⏭ Skipping existing article: {entry.title}")
                     continue
@@ -399,7 +364,7 @@ def main():
                     'published_at': published_time,
                 }
                 
-                if insert_article(article, category_name=category, tag_names=tags):
+                if insert_article_api(article, category_name=category, tag_names=tags):
                     processed_count += 1
                     print("--- Article Details ---")
                     print(f"Title: {article['title']}")
