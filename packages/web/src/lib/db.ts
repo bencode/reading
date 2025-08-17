@@ -12,12 +12,7 @@ export function getDb(): Knex {
     global.__app_db = knex({
       client: 'better-sqlite3',
       connection: {
-        filename: DB_PATH,
-        options: {
-          fileMustExist: false,
-          timeout: 20000,
-          verbose: process.env.NODE_ENV === 'development' ? console.log : undefined
-        }
+        filename: DB_PATH
       },
       useNullAsDefault: true,
       pool: {
