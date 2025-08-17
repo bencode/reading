@@ -51,11 +51,28 @@ def init_db():
     else:
         print(f"Database directory exists: {DB_DIR}")
     
-    # Test database accessibility
+    # Test database accessibility and configure WAL mode
     if os.path.exists(DB_PATH):
         print(f"Database file found: {DB_PATH}")
     else:
         print(f"Database file will be created: {DB_PATH}")
+    
+    # Configure database for concurrent access
+    conn = sqlite3.connect(DB_PATH, timeout=30.0)
+    try:
+        # Enable WAL mode for concurrent read/write access
+        conn.execute("PRAGMA journal_mode = WAL;")
+        # Set synchronous mode to NORMAL for better performance
+        conn.execute("PRAGMA synchronous = NORMAL;")
+        # Increase cache size
+        conn.execute("PRAGMA cache_size = 1000;")
+        # Use memory for temporary storage
+        conn.execute("PRAGMA temp_store = memory;")
+        print("Database configured with WAL mode for concurrent access")
+    except Exception as e:
+        print(f"Warning: Failed to configure database: {e}")
+    finally:
+        conn.close()
     
     print("Database initialization completed.")
 
@@ -83,9 +100,11 @@ def get_or_create_tag(conn, tag_name):
 
 def check_article_exists(url):
     """Checks if an article with the given URL already exists in the database."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30.0)
     cursor = conn.cursor()
     try:
+        # Set WAL mode for concurrent access
+        cursor.execute("PRAGMA journal_mode = WAL;")
         cursor.execute("SELECT id FROM articles WHERE original_url = ?", (url,))
         result = cursor.fetchone()
         return result is not None
@@ -97,48 +116,68 @@ def check_article_exists(url):
 
 def insert_article(article, category_name=None, tag_names=None):
     """Inserts a single article into the database, avoiding duplicates, and links categories/tags."""
-    conn = sqlite3.connect(DB_PATH, timeout=20.0)  # Add timeout for database locks
-    cursor = conn.cursor()
-    try:
-        # Insert article and get its ID
-        cursor.execute(
-            "INSERT INTO articles (title, original_url, summary, source_name, published_at) VALUES (?, ?, ?, ?, ?)",
-            (article['title'], article['link'], article['summary'], article['source'], article['published_at'])
-        )
-        article_id = cursor.lastrowid  # Use lastrowid instead of RETURNING
-        conn.commit()
-        print(f"✓ Inserted new article: {article['title']} with ID {article_id}")
-
-        # Link category
-        if category_name:
-            category_id = get_or_create_category(conn, category_name)
-            cursor.execute("INSERT INTO article_categories (article_id, category_id) VALUES (?, ?)", (article_id, category_id))
+    max_retries = 3
+    retry_delay = 1  # seconds
+    
+    for attempt in range(max_retries):
+        conn = None
+        try:
+            # Use longer timeout and WAL mode for concurrent access
+            conn = sqlite3.connect(DB_PATH, timeout=60.0)
+            cursor = conn.cursor()
+            
+            # Set WAL mode if not already set
+            cursor.execute("PRAGMA journal_mode = WAL;")
+            
+            # Insert article and get its ID
+            cursor.execute(
+                "INSERT INTO articles (title, original_url, summary, source_name, published_at) VALUES (?, ?, ?, ?, ?)",
+                (article['title'], article['link'], article['summary'], article['source'], article['published_at'])
+            )
+            article_id = cursor.lastrowid
             conn.commit()
-            print(f"  └─ Linked to category: {category_name}")
+            print(f"✓ Inserted new article: {article['title']} with ID {article_id}")
 
-        # Link tags
-        if tag_names:
-            for tag_name in tag_names:
-                tag_id = get_or_create_tag(conn, tag_name)
-                cursor.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", (article_id, tag_id))
-            conn.commit()
-            print(f"  └─ Linked to tags: {', '.join(tag_names)}")
+            # Link category
+            if category_name:
+                category_id = get_or_create_category(conn, category_name)
+                cursor.execute("INSERT INTO article_categories (article_id, category_id) VALUES (?, ?)", (article_id, category_id))
+                conn.commit()
+                print(f"  └─ Linked to category: {category_name}")
 
-        return True  # Successfully inserted
+            # Link tags
+            if tag_names:
+                for tag_name in tag_names:
+                    tag_id = get_or_create_tag(conn, tag_name)
+                    cursor.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", (article_id, tag_id))
+                conn.commit()
+                print(f"  └─ Linked to tags: {', '.join(tag_names)}")
 
-    except sqlite3.IntegrityError as e:
-        print(f"⚠ Article already exists (skipped): {article['title']} - {e}")
-        return False  # Already exists
-    except sqlite3.OperationalError as e:
-        print(f"✗ Database locked or operational error: {e}")
-        print(f"  Article: {article['title']}")
-        return False
-    except Exception as e:
-        print(f"✗ Error inserting article {article['title']}: {e}")
-        print(f"  Error type: {type(e).__name__}")
-        return False
-    finally:
-        conn.close()
+            return True  # Successfully inserted
+
+        except sqlite3.IntegrityError as e:
+            print(f"⚠ Article already exists (skipped): {article['title']} - {e}")
+            return False  # Already exists
+        except sqlite3.OperationalError as e:
+            if attempt < max_retries - 1:
+                print(f"⚠ Database busy (attempt {attempt + 1}/{max_retries}): {e}")
+                print(f"  Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+                continue
+            else:
+                print(f"✗ Database locked or operational error after {max_retries} attempts: {e}")
+                print(f"  Article: {article['title']}")
+                return False
+        except Exception as e:
+            print(f"✗ Error inserting article {article['title']}: {e}")
+            print(f"  Error type: {type(e).__name__}")
+            return False
+        finally:
+            if conn:
+                conn.close()
+    
+    return False
 
 def summarize_and_categorize_article(title, content):
     """Summarizes an article and suggests a category and tags using a generic LLM API."""

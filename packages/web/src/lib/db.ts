@@ -12,7 +12,12 @@ export function getDb(): Knex {
     global.__app_db = knex({
       client: 'better-sqlite3',
       connection: {
-        filename: DB_PATH
+        filename: DB_PATH,
+        options: {
+          fileMustExist: false,
+          timeout: 20000,
+          verbose: process.env.NODE_ENV === 'development' ? console.log : undefined
+        }
       },
       useNullAsDefault: true,
       pool: {
@@ -22,6 +27,19 @@ export function getDb(): Knex {
         idleTimeoutMillis: 30000
       }
     })
+    
+    // 启用WAL模式以支持并发读写
+    const db = global.__app_db
+    db.raw('PRAGMA journal_mode = WAL;').then(() => {
+      console.log('WAL mode enabled for SQLite database')
+    }).catch(err => {
+      console.error('Failed to enable WAL mode:', err)
+    })
+    
+    // 设置其他性能优化PRAGMA
+    db.raw('PRAGMA synchronous = NORMAL;').catch(err => console.error('PRAGMA synchronous failed:', err))
+    db.raw('PRAGMA cache_size = 1000;').catch(err => console.error('PRAGMA cache_size failed:', err))
+    db.raw('PRAGMA temp_store = memory;').catch(err => console.error('PRAGMA temp_store failed:', err))
     
     globalThis.console.log(`Database connected at: ${DB_PATH}`)
     
