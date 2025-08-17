@@ -67,6 +67,7 @@ def get_or_create_category(conn, category_name):
         return result[0]
     else:
         cursor.execute("INSERT INTO categories (name) VALUES (?)", (category_name,))
+        conn.commit()
         return cursor.lastrowid
 
 def get_or_create_tag(conn, tag_name):
@@ -77,6 +78,7 @@ def get_or_create_tag(conn, tag_name):
         return result[0]
     else:
         cursor.execute("INSERT INTO tags (name) VALUES (?)", (tag_name,))
+        conn.commit()
         return cursor.lastrowid
 
 def check_article_exists(url):
