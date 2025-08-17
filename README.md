@@ -63,7 +63,34 @@ pip install -r requirements.txt
 ```bash
 # packages/tasks/.env
 LLM_API_ENDPOINT=https://api.openai.com/v1/chat/completions
-LLM_API_KEY=your_api_key_here
+DASHSCOPE_API_KEY=your_api_key_here
+
+# Database Access Mode (Optional)
+# WEB_API_URL=http://localhost:3000  # Use API mode for container deployment
+# DATABASE_PATH=/custom/path/reading.db  # Custom database path
+```
+
+**Database Access Modes:**
+
+The application supports two database access modes:
+
+1. **Direct Database Mode (Default)**
+   - Scraper directly accesses SQLite database file
+   - Suitable for local development and single-instance deployment
+   - Best performance for local file system access
+
+2. **API Proxy Mode (Container-Friendly)**
+   - Scraper uses HTTP API calls to web application for database operations
+   - Solves SQLite concurrency issues in containerized environments
+   - Required when web and scraper run in separate containers
+   - Configure by setting `WEB_API_URL` environment variable
+
+```bash
+# For container deployment (scraper → web API → database)
+WEB_API_URL=http://web-service:3000
+
+# For local development (scraper → direct database access)
+# Leave WEB_API_URL unset or empty
 ```
 
 **Web Frontend Authentication:**
@@ -186,6 +213,11 @@ docker-compose down && docker-compose build --no-cache && docker-compose up -d
 - **Network**: Isolated container communication
 - **Scraper**: External cron-scheduled article collection
 
+**Container Database Access:**
+- Web and scraper containers use **API Proxy Mode** automatically
+- No SQLite file locking issues between containers
+- Configure `WEB_API_URL=http://web-service:3000` in container environment
+
 ### **Production Deployment**
 
 1. **Server Setup**: Install Docker and Docker Compose
@@ -272,21 +304,24 @@ If you have existing `data/reading.db`:
 
 ### Project Structure
 
+**Monorepo Architecture:**
 ```
-packages/web/src/
-├── app/                 # Next.js App Router
-│   ├── api/            # API routes
-│   ├── globals.css     # Global styles
-│   └── page.tsx        # Main application
-├── components/ui/       # Reusable UI components
-├── lib/                # Utilities and database
-└── services/           # Business logic layer
+packages/
+├── web/                # Next.js frontend with TypeScript
+│   └── src/           # App Router, API routes, components
+└── tasks/             # Python backend (modular design)
+    ├── scraper.py          # Main orchestration and RSS processing
+    ├── db_operations.py    # Database operations and connection handling  
+    ├── llm_processing.py   # LLM integration and content analysis
+    ├── article_processing.py # Article content extraction and processing
+    └── migrations/         # Database schema management
+```
 
-packages/tasks/
-├── scraper.py          # RSS and web scraping
-├── migrations/         # Database schema changes
-└── requirements.txt    # Python dependencies
-```
+**Key Features:**
+- **Modular Backend**: Each module has single responsibility with dependency injection
+- **Dual Database Modes**: Direct access or API proxy for container deployments
+- **Graceful Degradation**: Intelligent fallbacks when LLM services unavailable
+- **Code Quality**: Comprehensive linting with flake8, black, and isort
 
 ### Commands
 
@@ -302,6 +337,8 @@ pnpm typecheck        # TypeScript checking
 cd packages/tasks
 python scraper.py     # Run article scraper with LLM processing
 yoyo apply           # Apply database migrations
+make lint            # Run code quality checks (flake8, black, isort)
+make format          # Auto-format code with black and isort
 ```
 ## 📄 License
 
