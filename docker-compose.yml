@@ -34,6 +34,23 @@ services:
     networks:
       - reading_network
 
+  # Tasks service for running scraper and other Python scripts
+  tasks:
+    build:
+      context: packages/tasks
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_PATH=/app/data/reading.db
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./packages/tasks:/app
+    networks:
+      - reading_network
+    profiles:
+      - tools
+
 networks:
   reading_network:
     driver: bridge
