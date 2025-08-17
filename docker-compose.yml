@@ -45,7 +45,6 @@ services:
       - .env
     volumes:
       - ./data:/app/data
-      - ./packages/tasks:/app
     networks:
       - reading_network
     profiles:
