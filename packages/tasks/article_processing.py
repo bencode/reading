@@ -35,22 +35,35 @@ def insert_article_api(article, category_name=None, tag_names=None):
     if tag_names:
         payload["tag_names"] = tag_names
 
-    response = requests.post(f"{WEB_API_URL}/api/articles", json=payload, timeout=30)
-
-    if response.status_code == 201:
-        result = response.json()
-        print(f"✓ Inserted new article: {article['title']} with ID {result['id']}")
-        if category_name:
-            print(f"  └─ Linked to category: {category_name}")
-        if tag_names:
-            print(f"  └─ Linked to tags: {', '.join(tag_names)}")
-        return True
-    elif response.status_code == 409:
-        print(f"⚠ Article already exists (skipped): {article['title']}")
+    try:
+        response = requests.post(f"{WEB_API_URL}/api/articles", json=payload, timeout=30)
+        
+        print(f"API Response Status: {response.status_code}")
+        print(f"API Response Headers: {dict(response.headers)}")
+        print(f"API Response Text (first 500 chars): {response.text[:500]}")
+        
+        if response.status_code == 201:
+            result = response.json()
+            print(f"✓ Inserted new article: {article['title']} with ID {result['id']}")
+            if category_name:
+                print(f"  └─ Linked to category: {category_name}")
+            if tag_names:
+                print(f"  └─ Linked to tags: {', '.join(tag_names)}")
+            return True
+        elif response.status_code == 409:
+            print(f"⚠ Article already exists (skipped): {article['title']}")
+            return False
+        else:
+            print(f"✗ Failed to insert article {article['title']}: Status {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+            
+    except requests.exceptions.RequestException as e:
+        print(f"✗ Network error calling API: {e}")
         return False
-    else:
-        error_msg = response.json().get("error", "Unknown error")
-        print(f"✗ Failed to insert article {article['title']}: {error_msg}")
+    except ValueError as e:
+        print(f"✗ JSON parsing error: {e}")
+        print(f"Response text: {response.text}")
         return False
 
 
