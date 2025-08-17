@@ -13,8 +13,9 @@ from bs4 import BeautifulSoup
 load_dotenv()
 
 # Database setup
-DB_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data')
-DB_PATH = os.path.join(DB_DIR, 'reading.db')
+# Use environment variable if set (for Docker), otherwise use relative path
+DB_PATH = os.getenv('DATABASE_PATH', os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'reading.db'))
+DB_DIR = os.path.dirname(DB_PATH)
 
 # Load RSS configuration
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'rss_config.yaml')
@@ -42,9 +43,21 @@ def load_classification_config():
     return config.get('classification', {})
 
 def init_db():
-    """Ensures the database directory exists."""
-    os.makedirs(DB_DIR, exist_ok=True)
-    print("Database directory ensured.")
+    """Ensures the database directory exists and database file is accessible."""
+    # Only create directory if it doesn't exist
+    if not os.path.exists(DB_DIR):
+        os.makedirs(DB_DIR, exist_ok=True)
+        print(f"Created database directory: {DB_DIR}")
+    else:
+        print(f"Database directory exists: {DB_DIR}")
+    
+    # Test database accessibility
+    if os.path.exists(DB_PATH):
+        print(f"Database file found: {DB_PATH}")
+    else:
+        print(f"Database file will be created: {DB_PATH}")
+    
+    print("Database initialization completed.")
 
 def get_or_create_category(conn, category_name):
     cursor = conn.cursor()
