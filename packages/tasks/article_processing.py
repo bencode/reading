@@ -14,9 +14,8 @@ def check_article_exists_api(url):
         raise ValueError("WEB_API_URL environment variable not set")
     api_url = f"{web_api_url}/api/articles/check?url={url}"
     response = requests.get(api_url, timeout=30)
-    if response.status_code == 200:
-        return response.json().get("exists", False)
-    return False
+    result = response.json()
+    return result.get("exists", False)
 
 
 def insert_article_api(article, category_name=None, tag_names=None):
@@ -40,20 +39,17 @@ def insert_article_api(article, category_name=None, tag_names=None):
 
     response = requests.post(f"{web_api_url}/api/articles", json=payload, timeout=30)
 
-    if response.status_code == 201:
-        result = response.json()
+    result = response.json()
+    if result.get("success"):
         print(f"✓ Inserted new article: {article['title']} with ID {result['id']}")
         if category_name:
             print(f"  └─ Linked to category: {category_name}")
         if tag_names:
             print(f"  └─ Linked to tags: {', '.join(tag_names)}")
         return True
-    elif response.status_code == 409:
-        print(f"⚠ Article already exists (skipped): {article['title']}")
-        return False
     else:
-        error_msg = response.json().get("error", "Unknown error")
-        print(f"✗ Failed to insert article {article['title']}: {error_msg}")
+        error_msg = result.get("error", "Unknown error")
+        print(f"⚠ Article already exists (skipped): {article['title']} - {error_msg}")
         return False
 
 
