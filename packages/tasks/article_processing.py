@@ -48,6 +48,7 @@ def insert_article_api(article, category_name=None, tag_names=None):
 
     print(f"DEBUG: Insert API response status: {response.status_code}")
     print(f"DEBUG: Insert API response text: {response.text}")
+    print(f"DEBUG: Insert API payload: {payload}")
     
     if not response.text.strip():
         print(f"✗ Failed to insert article {article['title']}: Empty response from API")
