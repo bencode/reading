@@ -2,6 +2,13 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**Reading** is an RSS aggregator for collecting and organizing daily tech article reading. It uses AI to intelligently filter and categorize content for more efficient information consumption.
+
+🌐 **Live Demo**: [https://reading.qijun.io/](https://reading.qijun.io/)  
+📋 **Current Sources**: [RSS Configuration](packages/tasks/rss_config.yaml)
+
+---
+
 **Reading** is an intelligent web application that automatically fetches articles from various online sources, uses AI to filter and summarize content, and presents them in a clean, organized interface. Perfect for staying informed without information overload.
 
 ## 🌟 Features
@@ -225,6 +232,16 @@ docker-compose down && docker-compose build --no-cache && docker-compose up -d
 3. **SSL/Reverse Proxy**: Use nginx or Caddy for HTTPS
 4. **Cron Jobs**: Schedule article scraping with system cron
 5. **Monitoring**: Set up log aggregation and health checks
+
+### **Live Demo**
+
+🌐 **Production Instance**: [https://reading.qijun.io/](https://reading.qijun.io/)
+
+A live example of the Reading application deployed with Docker and configured for production use. This instance demonstrates:
+- Automated article collection from multiple RSS sources
+- AI-powered content summarization and categorization
+- Clean, responsive user interface
+- Secure authentication system
 
 ### **Scheduled Article Scraping**
 
