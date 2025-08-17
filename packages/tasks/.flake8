@@ -1,0 +1,14 @@
+[flake8]
+max-line-length = 110
+extend-ignore = E203, W503
+exclude = 
+    .git,
+    __pycache__,
+    migrations/,
+    .venv,
+    venv,
+    env,
+    .env
+per-file-ignores = 
+    # Allow unused imports in __init__.py files
+    __init__.py:F401

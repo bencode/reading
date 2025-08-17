@@ -42,6 +42,9 @@ Run from `packages/tasks/`:
 - `python scraper.py` - Run article scraper
 - `python main.py` - Run LLM summarization
 - `yoyo apply` - Apply database migrations
+- `make lint` - Run code quality checks (flake8, black --check, isort --check)
+- `make format` - Format code with black and isort
+- `make check` - Run lint checks (alias for make lint)
 
 ### Workspace Level
 Run from root:
