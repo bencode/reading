@@ -99,8 +99,42 @@ def get_or_create_tag(conn, tag_name):
         return cursor.lastrowid
 
 # Web API configuration for article insertion
-WEB_API_URL = "http://localhost:3000"
-# WEB_API_URL = os.getenv("WEB_API_URL", False)
+WEB_API_URL = os.getenv("WEB_API_URL", None)
+
+def check_article_exists(conn, url):
+    """Check if article exists in database."""
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM articles WHERE original_url = ?", (url,))
+    result = cursor.fetchone()
+    return result is not None
+
+def insert_article(conn, article, category_name=None, tag_names=None):
+    """Insert article into database with categories and tags."""
+    cursor = conn.cursor()
+    
+    # Insert article
+    cursor.execute("""
+        INSERT INTO articles (title, original_url, summary, source_name, published_at, is_read, starred, deleted, rating)
+        VALUES (?, ?, ?, ?, ?, 0, 0, 0, NULL)
+    """, (article['title'], article['link'], article['summary'], article['source'], article['published_at']))
+    
+    article_id = cursor.lastrowid
+    
+    # Handle category
+    if category_name:
+        category_id = get_or_create_category(conn, category_name)
+        cursor.execute("INSERT INTO article_categories (article_id, category_id) VALUES (?, ?)", 
+                      (article_id, category_id))
+    
+    # Handle tags
+    if tag_names:
+        for tag_name in tag_names:
+            tag_id = get_or_create_tag(conn, tag_name)
+            cursor.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", 
+                          (article_id, tag_id))
+    
+    conn.commit()
+    return article_id
 
 def check_article_exists_api(url):
     """Check if article exists via web API."""
@@ -323,58 +357,91 @@ def main():
     feeds = load_feeds()
     fetch_full_content = full_config.get('settings', {}).get('fetch_full_content', False)
     
-    for source, feed_config in feeds.items():
-        url = feed_config["url"]
-        limit = feed_config["limit"]
-        print(f"\nFetching articles from {source} (limit: {limit})...")
-        feed = fetch_rss_feed(url)
+    # Determine if we should use API or direct database access
+    use_api = WEB_API_URL is not None
+    conn = None
+    
+    if not use_api:
+        # Initialize database connection for direct access
+        conn = sqlite3.connect(DB_PATH, timeout=30.0)
+        print("Using direct database access mode")
+    else:
+        print(f"Using API proxy mode: {WEB_API_URL}")
+    
+    try:
+        for source, feed_config in feeds.items():
+            url = feed_config["url"]
+            limit = feed_config["limit"]
+            print(f"\nFetching articles from {source} (limit: {limit})...")
+            feed = fetch_rss_feed(url)
 
-        if feed:
-            articles_to_process = feed.entries[:limit]
+            if feed:
+                articles_to_process = feed.entries[:limit]
 
-            processed_count = 0
-            skipped_count = 0
+                processed_count = 0
+                skipped_count = 0
 
-            for entry in articles_to_process:
-                # Check if article already exists before processing
-                if check_article_exists_api(entry.link):
-                    skipped_count += 1
-                    print(f"⏭ Skipping existing article: {entry.title}")
-                    continue
+                for entry in articles_to_process:
+                    # Check if article already exists before processing
+                    if use_api:
+                        article_exists = check_article_exists_api(entry.link)
+                    else:
+                        article_exists = check_article_exists(conn, entry.link)
+                    
+                    if article_exists:
+                        skipped_count += 1
+                        print(f"⏭ Skipping existing article: {entry.title}")
+                        continue
 
-                published_time = time.strftime('%Y-%m-%dT%H:%M:%SZ', entry.get('published_parsed')) if entry.get('published_parsed') else None
+                    published_time = time.strftime('%Y-%m-%dT%H:%M:%SZ', entry.get('published_parsed')) if entry.get('published_parsed') else None
 
-                print(f"🔄 Processing new article: {entry.title}")
-                rss_content = entry.get('summary', '') if hasattr(entry, 'summary') else entry.get('description', '')
-                
-                # Fetch full article content if enabled
-                if fetch_full_content:
-                    full_content = fetch_full_article_content(entry.link, rss_content)
-                else:
-                    full_content = rss_content
-                    print(f"  → Using RSS content ({len(full_content)} chars)")
-                
-                summarized_text, category, tags = summarize_and_categorize_article(entry.title, full_content)
+                    print(f"🔄 Processing new article: {entry.title}")
+                    rss_content = entry.get('summary', '') if hasattr(entry, 'summary') else entry.get('description', '')
+                    
+                    # Fetch full article content if enabled
+                    if fetch_full_content:
+                        full_content = fetch_full_article_content(entry.link, rss_content)
+                    else:
+                        full_content = rss_content
+                        print(f"  → Using RSS content ({len(full_content)} chars)")
+                    
+                    summarized_text, category, tags = summarize_and_categorize_article(entry.title, full_content)
 
-                article = {
-                    'title': entry.title,
-                    'link': entry.link,
-                    'summary': summarized_text,
-                    'source': source,
-                    'published_at': published_time,
-                }
-                
-                if insert_article_api(article, category_name=category, tag_names=tags):
-                    processed_count += 1
-                    print("--- Article Details ---")
-                    print(f"Title: {article['title']}")
-                    print(f"Link: {article['link']}")
-                    print(f"Summarized Content:\n{summarized_text}")
-                    print(f"Category: {category}")
-                    print(f"Tags: {tags}")
-                    print()
+                    article = {
+                        'title': entry.title,
+                        'link': entry.link,
+                        'summary': summarized_text,
+                        'source': source,
+                        'published_at': published_time,
+                    }
+                    
+                    # Insert article using appropriate method
+                    if use_api:
+                        success = insert_article_api(article, category_name=category, tag_names=tags)
+                    else:
+                        article_id = insert_article(conn, article, category_name=category, tag_names=tags)
+                        print(f"✓ Inserted new article: {article['title']} with ID {article_id}")
+                        if category:
+                            print(f"  └─ Linked to category: {category}")
+                        if tags:
+                            print(f"  └─ Linked to tags: {', '.join(tags)}")
+                        success = True
+                    
+                    if success:
+                        processed_count += 1
+                        print("--- Article Details ---")
+                        print(f"Title: {article['title']}")
+                        print(f"Link: {article['link']}")
+                        print(f"Summarized Content:\n{summarized_text}")
+                        print(f"Category: {category}")
+                        print(f"Tags: {tags}")
+                        print()
 
-            print(f"📊 Summary for {source}: {processed_count} new articles processed, {skipped_count} existing articles skipped")
+                print(f"📊 Summary for {source}: {processed_count} new articles processed, {skipped_count} existing articles skipped")
+    
+    finally:
+        if conn:
+            conn.close()
 
 
 if __name__ == "__main__":
