@@ -39,6 +39,13 @@ def insert_article_api(article, category_name=None, tag_names=None):
 
     response = requests.post(f"{web_api_url}/api/articles", json=payload, timeout=30)
 
+    print(f"DEBUG: Insert API response status: {response.status_code}")
+    print(f"DEBUG: Insert API response text: {response.text}")
+    
+    if not response.text.strip():
+        print(f"✗ Failed to insert article {article['title']}: Empty response from API")
+        return False
+        
     result = response.json()
     if result.get("success"):
         print(f"✓ Inserted new article: {article['title']} with ID {result['id']}")
