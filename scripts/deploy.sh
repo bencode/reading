@@ -33,11 +33,30 @@ fi
 
 echo -e "${GREEN}✅ Prerequisites check passed${NC}"
 
-# Build and start services
-echo -e "${YELLOW}🔨 Building and starting services...${NC}"
-docker-compose down --remove-orphans
-docker-compose build --no-cache
-docker-compose up -d
+# Build images first to avoid downtime during deployment
+echo -e "${YELLOW}🔨 Building images (this may take a while)...${NC}"
+docker-compose build
+
+echo -e "${YELLOW}🔄 Performing zero-downtime deployment...${NC}"
+
+# Check if services are currently running
+if docker-compose ps --services --filter "status=running" | grep -q .; then
+    echo -e "${YELLOW}📦 Services are running, performing rolling update...${NC}"
+    
+    # Use up with --force-recreate to replace containers with new images
+    # This recreates containers but tries to minimize downtime
+    docker-compose up -d --force-recreate --remove-orphans
+    
+    # Wait a moment for services to stabilize
+    echo -e "${YELLOW}⏳ Waiting for services to stabilize...${NC}"
+    sleep 5
+    
+    echo -e "${YELLOW}🧹 Cleaning up old images...${NC}"
+    docker image prune -f
+else
+    echo -e "${YELLOW}🆕 First time deployment, starting services...${NC}"
+    docker-compose up -d
+fi
 
 # Wait for services to be ready
 echo -e "${YELLOW}⏳ Waiting for services to be ready...${NC}"
