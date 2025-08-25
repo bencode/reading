@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Verify password
-  const isValidPassword = verifyPassword(password, AUTH_CONFIG.ADMIN_PASSWORD_HASH);
+  const isValidPassword = verifyPassword(password);
 
   if (!isValidPassword) {
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 });

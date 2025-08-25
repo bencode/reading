@@ -2,12 +2,6 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
 // Configuration - In production, use environment variables
-// Decode base64 hash if using encoded version
-let passwordHash = process.env.ADMIN_PASSWORD_HASH;
-if (!passwordHash && process.env.ADMIN_PASSWORD_HASH_ENCODED) {
-  passwordHash = Buffer.from(process.env.ADMIN_PASSWORD_HASH_ENCODED, 'base64').toString();
-}
-
 export const AUTH_CONFIG = {
   // Secret token for accessing the auth page
   ACCESS_TOKEN: process.env.ACCESS_TOKEN || 'your-secret-access-token',
@@ -17,16 +11,23 @@ export const AUTH_CONFIG = {
   
   // Admin credentials
   ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'admin',
-  ADMIN_PASSWORD_HASH: passwordHash || (() => {
-    throw new Error('Password hash environment variable is required');
-  })(),
   
   // Token expiry
   TOKEN_EXPIRY: '7d' as const,
 };
 
-export function verifyPassword(password: string, hash: string): boolean {
-  return bcrypt.compareSync(password, hash);
+export function verifyPassword(password: string): boolean {
+  // Get hash at runtime to avoid build-time errors
+  let passwordHash = process.env.ADMIN_PASSWORD_HASH;
+  if (!passwordHash && process.env.ADMIN_PASSWORD_HASH_ENCODED) {
+    passwordHash = Buffer.from(process.env.ADMIN_PASSWORD_HASH_ENCODED, 'base64').toString();
+  }
+  
+  if (!passwordHash) {
+    throw new Error('Password hash environment variable is required');
+  }
+  
+  return bcrypt.compareSync(password, passwordHash);
 }
 
 export function generateToken(username: string): string {
