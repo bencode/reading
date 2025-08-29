@@ -58,58 +58,57 @@ def _build_article_filter_prompt(title, content):
 def filter_article_content(title, content, llm_config=None):
     """
     Filter article content using LLM to determine if it should be included.
-    
+
     Args:
         title (str): Article title
         content (str): Article content
         llm_config (dict): LLM configuration
-    
+
     Returns:
         tuple: (should_include: bool, reason: str)
     """
     if not llm_config or not llm_config.get("api_key"):
         print("⚠ No LLM config provided, accepting all articles")
         return True, "No LLM filtering configured"
-    
+
     print(f"🔍 Filtering article: {title}")
-    
+
     try:
         headers = _get_llm_headers(llm_config["api_key"])
         prompt = _build_article_filter_prompt(title, content)
-        
+
         payload = {
             "model": "qwen-plus",
-            "messages": [
-                {"role": "user", "content": prompt}
-            ],
+            "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.1,
             "max_tokens": 200,
         }
-        
-        response = requests.post(
-            llm_config["api_endpoint"], 
-            headers=headers, 
-            json=payload, 
-            timeout=30
-        )
-        
+
+        response = requests.post(llm_config["api_endpoint"], headers=headers, json=payload, timeout=30)
+
         if response.status_code == 200:
             result = response.json()
             llm_response = result.get("choices", [{}])[0].get("message", {}).get("content", "")
-            
+
             # Parse response
             if "ACCEPT" in llm_response.upper():
-                reason = llm_response.split(":", 1)[1].strip() if ":" in llm_response else "Meets technical content criteria"
+                reason = (
+                    llm_response.split(":", 1)[1].strip()
+                    if ":" in llm_response
+                    else "Meets technical content criteria"
+                )
                 print(f"✅ Article accepted: {reason}")
                 return True, reason
             else:
-                reason = llm_response.split(":", 1)[1].strip() if ":" in llm_response else "Does not meet criteria"
+                reason = (
+                    llm_response.split(":", 1)[1].strip() if ":" in llm_response else "Does not meet criteria"
+                )
                 print(f"❌ Article rejected: {reason}")
                 return False, reason
         else:
             print(f"⚠ LLM API error: {response.status_code}")
             return True, "LLM API error, accepting by default"
-    
+
     except Exception as e:
         print(f"⚠ Error in content filtering: {e}")
         return True, "Error in filtering, accepting by default"

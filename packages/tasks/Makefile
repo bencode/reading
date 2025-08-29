@@ -6,14 +6,14 @@ install:
 
 # Format code with black and isort
 format:
-	black .
-	isort .
+	python -m black .
+	python -m isort .
 
 # Run linting checks
 lint:
-	flake8 .
-	black --check .
-	isort --check-only .
+	python -m flake8 .
+	python -m black --check .
+	python -m isort --check-only .
 
 # Check code quality (lint + format check)
 check: lint

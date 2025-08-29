@@ -12,7 +12,7 @@ from article_processing import (
     insert_article_api,
 )
 from db_operations import check_article_exists, connect_to_database, init_db, insert_article
-from llm_processing import summarize_and_categorize_article, filter_article_content
+from llm_processing import filter_article_content, summarize_and_categorize_article
 
 # Load environment variables from .env file
 load_dotenv()
@@ -126,14 +126,14 @@ def _process_single_article(entry, use_api, conn, fetch_full_content, source):
 
     print(f"🔄 Processing new article: {entry.title}")
     full_content = _get_article_content(entry, fetch_full_content)
-    
+
     # Filter article content before expensive LLM processing
     should_include, filter_reason = filter_article_content(entry.title, full_content, LLM_CONFIG)
-    
+
     if not should_include:
         print(f"🚫 Article filtered out: {entry.title} - {filter_reason}")
         return False, "filtered"
-    
+
     summarized_text, category, tags = summarize_and_categorize_article(entry.title, full_content, LLM_CONFIG)
 
     article = _create_article_dict(entry, summarized_text, source, published_time)
@@ -197,14 +197,16 @@ def main():
         total_processed = 0
         total_skipped = 0
         total_filtered = 0
-        
+
         for source, feed_config in feeds.items():
-            processed, skipped, filtered = _process_feed_source(source, feed_config, use_api, conn, fetch_full_content)
+            processed, skipped, filtered = _process_feed_source(
+                source, feed_config, use_api, conn, fetch_full_content
+            )
             total_processed += processed
             total_skipped += skipped
             total_filtered += filtered
-        
-        print(f"\n🎉 Overall Summary:")
+
+        print("\n🎉 Overall Summary:")
         print(f"📈 {total_processed} articles processed")
         print(f"⏭️ {total_skipped - total_filtered} articles skipped (existing)")
         print(f"🚫 {total_filtered} articles filtered out")
