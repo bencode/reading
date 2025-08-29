@@ -4,6 +4,7 @@ import feedparser
 import yaml
 from dotenv import load_dotenv
 
+from article_filter import filter_article_content
 from article_processing import (
     check_article_exists_api,
     create_article_dict,
@@ -12,7 +13,7 @@ from article_processing import (
     insert_article_api,
 )
 from db_operations import check_article_exists, connect_to_database, init_db, insert_article
-from llm_processing import filter_article_content, summarize_and_categorize_article
+from llm_processing import summarize_and_categorize_article
 
 # Load environment variables from .env file
 load_dotenv()

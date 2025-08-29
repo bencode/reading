@@ -65,6 +65,12 @@ Visit `http://localhost:3000` to explore!
 ./scripts/data-manager.sh backup   # Backup
 ./scripts/data-manager.sh restore  # Restore
 ./scripts/data-manager.sh export   # Export SQL dump
+
+# Article Quality Management
+./scripts/clean-database.sh --dry-run              # Preview articles to be removed
+./scripts/clean-database.sh --source "Hacker News" # Clean specific source  
+./scripts/clean-database.sh --limit 50 --dry-run   # Test on limited articles
+./scripts/clean-database.sh --confirm              # Execute cleanup
 ```
 
 ---
