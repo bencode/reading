@@ -12,7 +12,7 @@ from article_processing import (
     insert_article_api,
 )
 from db_operations import check_article_exists, connect_to_database, init_db, insert_article
-from llm_processing import summarize_and_categorize_article
+from llm_processing import summarize_and_categorize_article, filter_article_content
 
 # Load environment variables from .env file
 load_dotenv()
@@ -119,13 +119,21 @@ def _process_single_article(entry, use_api, conn, fetch_full_content, source):
 
     if article_exists:
         print(f"⏭ Skipping existing article: {entry.title}")
-        return False, None
+        return False, "existing"
 
     # Process new article
     published_time = get_published_time(entry)
 
     print(f"🔄 Processing new article: {entry.title}")
     full_content = _get_article_content(entry, fetch_full_content)
+    
+    # Filter article content before expensive LLM processing
+    should_include, filter_reason = filter_article_content(entry.title, full_content, LLM_CONFIG)
+    
+    if not should_include:
+        print(f"🚫 Article filtered out: {entry.title} - {filter_reason}")
+        return False, "filtered"
+    
     summarized_text, category, tags = summarize_and_categorize_article(entry.title, full_content, LLM_CONFIG)
 
     article = _create_article_dict(entry, summarized_text, source, published_time)
@@ -133,8 +141,9 @@ def _process_single_article(entry, use_api, conn, fetch_full_content, source):
 
     if success:
         _print_article_details(article, summarized_text, category, tags)
+        return True, "processed"
 
-    return success, (article, summarized_text, category, tags)
+    return False, "failed"
 
 
 def _process_feed_source(source, feed_config, use_api, conn, fetch_full_content):
@@ -145,25 +154,31 @@ def _process_feed_source(source, feed_config, use_api, conn, fetch_full_content)
 
     feed = fetch_rss_feed(url)
     if not feed:
-        return 0, 0
+        return 0, 0, 0
 
     articles_to_process = feed.entries[:limit]
     processed_count = 0
-    skipped_count = 0
+    existing_count = 0
+    filtered_count = 0
+    failed_count = 0
 
     for entry in articles_to_process:
-        success, _ = _process_single_article(entry, use_api, conn, fetch_full_content, source)
+        success, reason = _process_single_article(entry, use_api, conn, fetch_full_content, source)
         if success:
             processed_count += 1
+        elif reason == "existing":
+            existing_count += 1
+        elif reason == "filtered":
+            filtered_count += 1
         else:
-            skipped_count += 1
+            failed_count += 1
 
     print(
-        f"📊 Summary for {source}: {processed_count} new articles processed, "
-        f"{skipped_count} existing articles skipped"
+        f"📊 Summary for {source}: {processed_count} processed, "
+        f"{existing_count} existing, {filtered_count} filtered, {failed_count} failed"
     )
 
-    return processed_count, skipped_count
+    return processed_count, existing_count + filtered_count + failed_count, filtered_count
 
 
 def main():
@@ -179,8 +194,21 @@ def main():
     use_api, conn = _setup_database_connection()
 
     try:
+        total_processed = 0
+        total_skipped = 0
+        total_filtered = 0
+        
         for source, feed_config in feeds.items():
-            _process_feed_source(source, feed_config, use_api, conn, fetch_full_content)
+            processed, skipped, filtered = _process_feed_source(source, feed_config, use_api, conn, fetch_full_content)
+            total_processed += processed
+            total_skipped += skipped
+            total_filtered += filtered
+        
+        print(f"\n🎉 Overall Summary:")
+        print(f"📈 {total_processed} articles processed")
+        print(f"⏭️ {total_skipped - total_filtered} articles skipped (existing)")
+        print(f"🚫 {total_filtered} articles filtered out")
+        print(f"📊 Total articles reviewed: {total_processed + total_skipped}")
     finally:
         if conn:
             conn.close()

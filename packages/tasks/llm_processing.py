@@ -26,6 +26,95 @@ def _get_llm_headers(api_key):
     }
 
 
+def _build_article_filter_prompt(title, content):
+    """Build prompt for article content filtering."""
+    return f"""请判断以下文章是否符合技术博客/文章聚合的收录标准。
+
+文章标题：{title}
+
+文章内容摘要：{content[:1000]}...
+
+收录标准：
+1. 技术相关：编程、开发工具、软件工程、系统架构、数据科学等
+2. 有实际价值：教程、经验分享、技术解析、工具介绍等
+3. 内容深度：不是简单的新闻转载，有一定的技术深度
+4. 非广告：不是纯粹的产品宣传或营销内容
+
+不收录的内容：
+- 纯新闻资讯（除非有技术分析）
+- 招聘信息
+- 产品营销广告
+- 与技术无关的内容
+- 过于简单的内容（如单纯的链接分享）
+
+请只回答：ACCEPT 或 REJECT
+
+如果回答ACCEPT，请简述理由（不超过50字）。
+如果回答REJECT，请说明原因（不超过50字）。
+
+格式：ACCEPT/REJECT: 理由"""
+
+
+def filter_article_content(title, content, llm_config=None):
+    """
+    Filter article content using LLM to determine if it should be included.
+    
+    Args:
+        title (str): Article title
+        content (str): Article content
+        llm_config (dict): LLM configuration
+    
+    Returns:
+        tuple: (should_include: bool, reason: str)
+    """
+    if not llm_config or not llm_config.get("api_key"):
+        print("⚠ No LLM config provided, accepting all articles")
+        return True, "No LLM filtering configured"
+    
+    print(f"🔍 Filtering article: {title}")
+    
+    try:
+        headers = _get_llm_headers(llm_config["api_key"])
+        prompt = _build_article_filter_prompt(title, content)
+        
+        payload = {
+            "model": "qwen-plus",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.1,
+            "max_tokens": 200,
+        }
+        
+        response = requests.post(
+            llm_config["api_endpoint"], 
+            headers=headers, 
+            json=payload, 
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            llm_response = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+            
+            # Parse response
+            if "ACCEPT" in llm_response.upper():
+                reason = llm_response.split(":", 1)[1].strip() if ":" in llm_response else "Meets technical content criteria"
+                print(f"✅ Article accepted: {reason}")
+                return True, reason
+            else:
+                reason = llm_response.split(":", 1)[1].strip() if ":" in llm_response else "Does not meet criteria"
+                print(f"❌ Article rejected: {reason}")
+                return False, reason
+        else:
+            print(f"⚠ LLM API error: {response.status_code}")
+            return True, "LLM API error, accepting by default"
+    
+    except Exception as e:
+        print(f"⚠ Error in content filtering: {e}")
+        return True, "Error in filtering, accepting by default"
+
+
 def _build_classification_prompt(title, content):
     """Build prompt for article classification."""
     classification_config = load_classification_config()
