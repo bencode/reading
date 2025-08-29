@@ -67,9 +67,13 @@ Visit `http://localhost:3000` to explore!
 ./scripts/data-manager.sh export   # Export SQL dump
 
 # Article Quality Management
+# Note: Run database migrations first if using the cleaner for the first time
+yoyo apply  # Run this once to create the processing state table
 ./scripts/clean-database.sh --dry-run              # Preview articles to be removed
 ./scripts/clean-database.sh --source "Hacker News" # Clean specific source  
 ./scripts/clean-database.sh --limit 50 --dry-run   # Test on limited articles
+./scripts/clean-database.sh --status               # Check processing status
+./scripts/clean-database.sh --reset                # Clear state and restart
 ./scripts/clean-database.sh --confirm              # Execute cleanup
 ```
 

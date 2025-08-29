@@ -29,22 +29,6 @@ LLM_CONFIG = {
 }
 
 
-def create_processing_state_table(conn):
-    """Create table to track article processing state."""
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS article_processing_state (
-            article_id INTEGER PRIMARY KEY,
-            processed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            filter_result TEXT,  -- 'accepted' or 'rejected'
-            filter_reason TEXT
-        )
-    """
-    )
-    conn.commit()
-
-
 def save_processing_result(conn, article_id, result, reason):
     """Save processing result to database."""
     cursor = conn.cursor()
@@ -155,9 +139,6 @@ def delete_articles_batch(conn, article_ids):
 
 async def process_articles_async(conn, args):
     """Async processing of articles with state tracking."""
-    # Create processing state table
-    create_processing_state_table(conn)
-
     # Handle reset option
     if args.reset:
         clear_processing_state(conn)
