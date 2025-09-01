@@ -26,8 +26,8 @@ RUN mkdir -p /app/data
 ENV PYTHONPATH=/app
 ENV DATABASE_PATH=/app/data/reading.db
 
-# Create a non-root user
-RUN useradd --create-home --shell /bin/bash scraper
+# Create a non-root user (使用与web服务相同的UID)
+RUN useradd --create-home --shell /bin/bash --uid 1001 scraper
 RUN chown -R scraper:scraper /app
 USER scraper
 
