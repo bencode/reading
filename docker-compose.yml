@@ -21,7 +21,7 @@ services:
     build:
       context: packages/tasks
       dockerfile: Dockerfile
-    command: ["yoyo", "apply", "--batch"]
+    command: ["yoyo", "apply", "--batch", "-d", "sqlite:////app/data/reading.db", "migrations/"]
     env_file:
       - .env
     volumes:

@@ -135,17 +135,7 @@ def _create_fallback_summary(title, content):
 
 def _guess_category_from_content(title, content):
     """Simple keyword-based category guessing."""
-    text = (title + " " + content).lower()
-
-    # Simple keyword matching
-    if any(word in text for word in ["tech", "programming", "software", "ai", "algorithm", "computer"]):
-        return "Technology"
-    elif any(word in text for word in ["math", "mathematics", "optimal", "equation", "calculation"]):
-        return "Science"
-    elif any(word in text for word in ["cook", "recipe", "food", "chef", "kitchen", "onion"]):
-        return "Lifestyle"
-    else:
-        return "Other"
+    return "Other"
 
 
 def summarize_and_categorize_article(title, content, llm_config=None):

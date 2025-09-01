@@ -18,6 +18,7 @@ export interface Article {
 export interface Category {
   id: number;
   name: string;
+  priority?: number;
 }
 
 export interface Tag {
@@ -36,7 +37,8 @@ export interface PaginatedResponse<T> {
 export async function getCategories(): Promise<Category[]> {
   const db = getDb();
   const categories = await db('categories')
-    .select('id', 'name')
+    .select('id', 'name', 'priority')
+    .orderBy('priority', 'asc')
     .orderBy('name', 'asc');
   return categories;
 }
