@@ -35,6 +35,36 @@ feeds:
       limit: 15
       enabled: true
 
+    - name: "MDN Web Docs Blog"
+      url: "https://developer.mozilla.org/en-US/blog/rss.xml"
+      limit: 15
+      enabled: true
+
+    - name: "WebKit Blog"
+      url: "https://webkit.org/blog/feed/"
+      limit: 15
+      enabled: true
+
+    - name: "Chrome Developers Blog"
+      url: "https://developer.chrome.com/feeds"
+      limit: 15
+      enabled: true
+
+    - name: "A List Apart"
+      url: "https://alistapart.com/main/feed/"
+      limit: 15
+      enabled: true
+
+    - name: "Frontend Focus Newsletter"
+      url: "https://frontendfoc.us/rss"
+      limit: 15
+      enabled: true
+
+    - name: "web.dev"
+      url: "https://web.dev/feed.xml"
+      limit: 15
+      enabled: true
+
     # Reddit 技术向子版块（高频，注意质量需靠 LLM 过滤）
     - name: "r/programming"
       url: "https://www.reddit.com/r/programming/.rss"
@@ -55,6 +85,7 @@ feeds:
       url: "https://www.reddit.com/r/rust/.rss"
       limit: 20
       enabled: true
+
 
     - name: "r/MachineLearning"
       url: "https://www.reddit.com/r/MachineLearning/.rss"
@@ -80,12 +111,37 @@ feeds:
       enabled: true
 
     - name: "Next.js Blog"
-      url: "https://nextjs.org/blog/rss.xml"
+      url: "https://nextjs.org/feed.xml"
       limit: 10
       enabled: true
 
     - name: "React Blog"
-      url: "https://react.dev/blog/rss.xml"
+      url: "https://react.dev/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Vue.js Blog"
+      url: "https://blog.vuejs.org/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Angular Blog"
+      url: "https://blog.angular.io/feed"
+      limit: 10
+      enabled: true
+
+    - name: "Svelte Blog"
+      url: "https://svelte.dev/blog/rss.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Nuxt Blog"
+      url: "https://nuxt.com/blog/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Remix Blog"
+      url: "https://remix.run/blog/rss.xml"
       limit: 10
       enabled: true
 
@@ -96,6 +152,11 @@ feeds:
 
     - name: "Hugging Face Blog"
       url: "https://huggingface.co/blog/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Anthropic Blog"
+      url: "https://www.anthropic.com/news/rss.xml"
       limit: 10
       enabled: true
 
@@ -114,6 +175,26 @@ feeds:
       limit: 10
       enabled: true
 
+    - name: "ESLint Blog"
+      url: "https://eslint.org/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Babel Blog"
+      url: "https://babeljs.io/blog/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "webpack Blog"
+      url: "https://webpack.js.org/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "TC39 Proposals Updates"
+      url: "https://github.com/tc39/proposals/commits/main.atom"
+      limit: 5
+      enabled: true
+
     - name: "Rust Blog"
       url: "https://blog.rust-lang.org/feed.xml"
       limit: 10
@@ -124,15 +205,17 @@ feeds:
       limit: 10
       enabled: true
 
-    - name: "JuliaLang Blog"
-      url: "https://julialang.org/blog/index.xml"
+    - name: "LWN.net (Kernel/OSS)"
+      url: "https://lwn.net/headlines/newrss"
       limit: 10
       enabled: true
 
-    - name: "Elixir Lang Blog"
-      url: "https://elixir-lang.org/blog/feed.xml"
+    - name: "CNCF Blog"
+      url: "https://www.cncf.io/feed/"
       limit: 10
       enabled: true
+
+
 
     - name: "Fly.io Blog (Engineering)"
       url: "https://fly.io/blog/rss.xml"
@@ -169,6 +252,16 @@ feeds:
       limit: 10
       enabled: true
 
+    - name: "ClickHouse Blog"
+      url: "https://clickhouse.com/blog/rss.xml"
+      limit: 10
+      enabled: true
+
+    - name: "Redis Blog"
+      url: "https://redis.io/blog/rss.xml"
+      limit: 10
+      enabled: true
+
     - name: "JavaScript Weekly"
       url: "https://javascriptweekly.com/rss"
       limit: 10
@@ -194,20 +287,7 @@ feeds:
       limit: 10
       enabled: true
 
-    - name: "LWN.net (Kernel/OSS)"
-      url: "https://lwn.net/headlines/newrss"
-      limit: 10
-      enabled: true
 
-    - name: "Planet Emacslife"
-      url: "https://planet.emacslife.com/atom.xml"
-      limit: 10
-      enabled: true
-
-    - name: "Sacha Chua - Emacs News"
-      url: "https://sachachua.com/blog/category/emacs-news/feed/"
-      limit: 10
-      enabled: true
 
   # Low-frequency sources (personal blogs, specialized content)
   # These sources publish occasionally but with high-quality content
@@ -235,6 +315,16 @@ feeds:
 
     - name: "Kent C. Dodds"
       url: "https://kentcdodds.com/blog/rss.xml"
+      limit: 5
+      enabled: true
+
+    - name: "Can I Use Updates"
+      url: "https://caniuse.com/feed"
+      limit: 5
+      enabled: true
+
+    - name: "Distill.pub"
+      url: "https://distill.pub/rss.xml"
       limit: 5
       enabled: true
 
@@ -339,48 +429,54 @@ classification:
 
     - name: "云原生与运维平台"
       description: "容器与编排、服务治理、可观测性、网络/边缘、平台工程、部署与运维最佳实践"
-      keywords: ["Docker", "Kubernetes", "Helm", "Service Mesh", "Ingress", "Observability", "SRE", "eBPF", "边缘计算"]
+      keywords: ["Docker", "Kubernetes", "Helm", "Service Mesh", "Ingress", "Observability", "SRE", "eBPF", "边缘计算", "CNCF"]
       priority: 4
 
-    - name: "Rust 与系统工程"
-      description: "Rust 语言与生态、并发/内存安全、Linux/内核/底层性能、编译器与系统编程"
-      keywords: ["borrow", "ownership", "unsafe", "no_std", "tokio", "内核", "eBPF", "性能分析"]
+    - name: "Web 开发工具与性能"
+      description: "构建工具、打包器、开发工具链、Web 性能优化、浏览器工程、开发者体验"
+      keywords: ["webpack", "Vite", "Rollup", "esbuild", "Parcel", "性能优化", "Chrome DevTools", "Web Vitals", "DX"]
       priority: 5
+
 
     - name: "JavaScript / TypeScript / Node.js"
       description: "JS/TS 语言与编译器、Node/Bun/Deno 运行时、V8/tsc、包管理与构建工具"
       keywords: ["TypeScript", "tsc", "V8", "Node", "npm", "pnpm", "Bun", "Deno", "ES提案", "AST", "构建链"]
       priority: 6
 
+    - name: "Rust 与系统工程"
+      description: "Rust 语言与生态、并发/内存安全、Linux/内核/底层性能、编译器与系统编程"
+      keywords: ["borrow", "ownership", "unsafe", "no_std", "tokio", "内核", "eBPF", "性能分析"]
+      priority: 7
+
     - name: "前端与 Web 平台"
       description: "浏览器平台能力、HTML/CSS、性能与可访问性、SSR/边缘渲染、UI/设计实现"
       keywords: ["React", "Next", "CSS", "Tailwind", "设计系统", "A11y", "Web APIs", "性能", "SSR", "Edge Rendering"]
-      priority: 7
+      priority: 8
 
     - name: "Python 生态"
       description: "Python 语言、标准库/PEP、常用库与工程实践（FastAPI、Poetry、性能、打包/部署）"
       keywords: ["PEP", "CPython", "PyPI", "FastAPI", "uv", "Poetry", "typing", "性能优化"]
-      priority: 8
+      priority: 9
 
     - name: "函数式与 Lisp/Clojure 家族"
       description: "FP 思想与范式、Clojure/ClojureScript、Scheme/Lisp、宏、不可变、并发模型"
       keywords: ["immutability", "macro", "transducer", "STM", "REPL", "Clojure", "Scheme", "Lisp"]
-      priority: 9
+      priority: 10
 
     - name: "人物与思想 / 架构与文化"
       description: "知名作者长文、工程哲学、架构演进与案例复盘、团队文化与方法论"
       keywords: ["principles", "culture", "architecture", "retrospective", "postmortem", "career", "leadership"]
-      priority: 10
+      priority: 11
 
     - name: "精选与综合"
       description: "多源汇总、每周刊/周报、榜单、社区热帖精选、通识型快讯"
       keywords: ["weekly", "status", "digest", "roundup", "top", "trending", "newsletter", "汇总"]
-      priority: 11
+      priority: 12
 
     - name: "Other"
       description: "无法明确归属或跨域过度；应保持低占比，并定期回溯优化边界"
       keywords: []
-      priority: 12
+      priority: 13
 
   # LLM prompt template for classification
   prompt_template: |
@@ -390,6 +486,8 @@ classification:
     - 若内容以论文/基准/理论为主，选"AI 研究与论文速览"
     - 若以系统实现/部署/优化为主，选"深度学习与 LLM 工程"
     - 框架 UI/浏览器选"前端与 Web 平台"，JS/TS 语言/Node 运行时选"JavaScript / TypeScript / Node.js"
+    - 构建工具、性能优化、开发工具选"Web 开发工具与性能"
+    - 容器、K8s、运维选"云原生与运维平台"
     - 不能归类时才选"Other"
     - 只输出一个类别名称
 
