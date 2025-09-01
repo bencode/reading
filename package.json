@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db": "docker run --rm -it -v $(pwd)/data:/data alpine/sqlite /data/reading.db"
   },
   "keywords": [],
   "author": "",
