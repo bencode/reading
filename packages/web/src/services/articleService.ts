@@ -26,12 +26,68 @@ export interface Tag {
   name: string;
 }
 
-export interface PaginatedResponse<T> {
+export type PaginatedResponse<T> = {
   data: T[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export type Issue = {
+  id: number;
+  title: string;
+  description: string | null;
+  cover_image: string | null;
+  status: 'draft' | 'published' | 'archived';
+  created_at: string;
+  published_at: string | null;
+  updated_at: string;
+  sections?: IssueSection[];
+}
+
+export type IssueSection = {
+  id: number;
+  issue_id: number;
+  article_id: number;
+  title: string | null;
+  description: string | null;
+  image: string | null;
+  external_url: string | null;
+  order_index: number;
+  created_at: string;
+  article?: Article;
+}
+
+export type CreateIssueData = {
+  title: string;
+  description?: string;
+  cover_image?: string;
+  status?: 'draft' | 'published';
+}
+
+export type CreateIssueSectionData = {
+  article_id: number;
+  title?: string;
+  description?: string;
+  image?: string;
+  external_url?: string;
+  order_index?: number;
+}
+
+export type UpdateIssueData = {
+  title?: string;
+  description?: string;
+  cover_image?: string;
+  status?: 'draft' | 'published' | 'archived';
+}
+
+export type UpdateIssueSectionData = {
+  title?: string;
+  description?: string;
+  image?: string;
+  external_url?: string;
+  order_index?: number;
 }
 
 export async function getCategories(): Promise<Category[]> {
