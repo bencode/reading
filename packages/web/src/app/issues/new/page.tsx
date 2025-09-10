@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Article, PaginatedResponse } from '../../../services/articleService';
 import { useAuth } from '@/contexts/AuthContext';
-import { TrashIcon, PlusIcon, GripVerticalIcon } from '@radix-ui/react-icons';
+import { TrashIcon, PlusIcon } from '@radix-ui/react-icons';
 
 type IssueStatus = 'draft' | 'published' | 'archived';
 
@@ -306,7 +306,7 @@ export default function IssueEditor() {
                             >
                               ↑
                             </Button>
-                            <GripVerticalIcon className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-400 text-lg">⋮⋮</span>
                             <Button
                               type="button"
                               variant="ghost"
@@ -341,11 +341,11 @@ export default function IssueEditor() {
                                 value={section.description || ''}
                                 onChange={(e) => updateSection(index, { description: e.target.value })}
                                 placeholder="Override article summary..."
-                                rows={3}
+                                rows={4}
                               />
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-3">
                               <div>
                                 <Label htmlFor={`section-image-${index}`}>Section Image</Label>
                                 <Input
