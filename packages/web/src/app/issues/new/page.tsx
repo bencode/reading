@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Article, PaginatedResponse } from '../../../services/articleService';
 import { useAuth } from '@/contexts/AuthContext';
 import { TrashIcon, PlusIcon } from '@radix-ui/react-icons';
+import ImagePicker from '@/components/ImagePicker';
 
 type IssueStatus = 'draft' | 'published' | 'archived';
 
@@ -209,13 +210,11 @@ export default function IssueEditor() {
               </div>
               
               <div>
-                <Label htmlFor="cover_image">Cover Image URL</Label>
-                <Input
-                  id="cover_image"
-                  type="url"
+                <ImagePicker
                   value={formData.cover_image}
-                  onChange={(e) => setFormData(prev => ({ ...prev, cover_image: e.target.value }))}
-                  placeholder="https://example.com/cover.jpg"
+                  onChange={(url) => setFormData(prev => ({ ...prev, cover_image: url }))}
+                  label="Cover Image"
+                  placeholder="Select or generate cover image..."
                 />
               </div>
               
@@ -347,13 +346,11 @@ export default function IssueEditor() {
                             
                             <div className="space-y-3">
                               <div>
-                                <Label htmlFor={`section-image-${index}`}>Section Image</Label>
-                                <Input
-                                  id={`section-image-${index}`}
-                                  type="url"
+                                <ImagePicker
                                   value={section.image || ''}
-                                  onChange={(e) => updateSection(index, { image: e.target.value })}
-                                  placeholder="https://example.com/image.jpg"
+                                  onChange={(url) => updateSection(index, { image: url })}
+                                  label="Section Image"
+                                  placeholder="Select or generate section image..."
                                 />
                               </div>
                               

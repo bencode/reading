@@ -58,6 +58,7 @@ Run from root:
 
 - Python backend expects `LLM_API_ENDPOINT` and `LLM_API_KEY` environment variables for LLM integration
 - Database path is hardcoded relative to project root: `../../data/reading.db`
+- For AI image generation, set `DASHSCOPE_API_KEY` environment variable (optional - will use placeholder service if not set)
 
 ### Authentication Setup
 The web application uses password-based authentication for admin features. To set up or reset the admin password:
