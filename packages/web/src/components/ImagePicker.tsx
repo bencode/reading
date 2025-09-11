@@ -14,18 +14,63 @@ type ImagePickerProps = {
   onChange: (url: string) => void;
   label?: string;
   placeholder?: string;
+  // Context for smart prompt generation
+  context?: string;
 };
 
-export default function ImagePicker({ value, onChange, label = "Image", placeholder = "Enter image URL or upload/generate" }: ImagePickerProps) {
+export default function ImagePicker({ value, onChange, label = "Image", placeholder = "Enter image URL or upload/generate", context }: ImagePickerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generatePrompt, setGeneratePrompt] = useState('');
+  const [promptLoading, setPromptLoading] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(value || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUrlChange = (url: string) => {
     setCurrentUrl(url);
+  };
+
+  const generateSmartPrompt = async () => {
+    if (!context) return '';
+    
+    setPromptLoading(true);
+    
+    try {
+      // Determine image type based on label
+      const imageType = label.toLowerCase().includes('cover') ? 'cover' : 
+                       label.toLowerCase().includes('section') ? 'section' : 'general';
+      
+      const response = await fetch('/api/generate-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          context: context.trim(),
+          type: imageType
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate prompt');
+      }
+
+      const data = await response.json();
+      return data.prompt;
+    } catch (error) {
+      console.error('Prompt generation error:', error);
+      
+      // Fallback to simple template
+      return `A professional, modern image representing "${context}", clean design, high quality`;
+    } finally {
+      setPromptLoading(false);
+    }
+  };
+
+  const handleSmartGenerate = async () => {
+    const smartPrompt = await generateSmartPrompt();
+    setGeneratePrompt(smartPrompt);
   };
 
   const handleSave = () => {
@@ -207,12 +252,28 @@ export default function ImagePicker({ value, onChange, label = "Image", placehol
               <div className="space-y-2">
                 <Label>Generate with AI ✨</Label>
                 <div className="space-y-2">
-                  <Textarea
-                    value={generatePrompt}
-                    onChange={(e) => setGeneratePrompt(e.target.value)}
-                    placeholder="Describe the image you want to generate, e.g., 'A modern tech office with clean minimalist design, bright lighting, and plants'"
-                    rows={3}
-                  />
+                  <div className="flex gap-2">
+                    <Textarea
+                      value={generatePrompt}
+                      onChange={(e) => setGeneratePrompt(e.target.value)}
+                      placeholder="Describe the image you want to generate, e.g., 'A modern tech office with clean minimalist design, bright lighting, and plants'"
+                      rows={3}
+                      className="flex-1"
+                    />
+                    {context && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSmartGenerate}
+                        disabled={promptLoading}
+                        className="h-fit mt-0 px-3 py-2"
+                        title="Generate smart prompt with AI"
+                      >
+                        {promptLoading ? '⏳' : '💡'}
+                      </Button>
+                    )}
+                  </div>
                   <Button
                     type="button"
                     variant="default"
@@ -225,7 +286,7 @@ export default function ImagePicker({ value, onChange, label = "Image", placehol
                   </Button>
                 </div>
                 <p className="text-xs text-gray-500">
-                  Powered by Qwen Image Generation • Free to use
+                  {context && '💡 Click the lightbulb for AI-powered smart suggestions • '}Powered by Qwen Image Generation • Free to use
                 </p>
               </div>
 

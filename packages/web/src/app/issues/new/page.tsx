@@ -215,6 +215,7 @@ export default function IssueEditor() {
                   onChange={(url) => setFormData(prev => ({ ...prev, cover_image: url }))}
                   label="Cover Image"
                   placeholder="Select or generate cover image..."
+                  context={formData.title || 'Issue cover image'}
                 />
               </div>
               
@@ -351,6 +352,7 @@ export default function IssueEditor() {
                                   onChange={(url) => updateSection(index, { image: url })}
                                   label="Section Image"
                                   placeholder="Select or generate section image..."
+                                  context={section.title || section.article?.title || 'Section image'}
                                 />
                               </div>
                               
