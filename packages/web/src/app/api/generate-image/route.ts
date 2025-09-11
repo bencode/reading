@@ -11,26 +11,9 @@ export async function POST(request: NextRequest) {
     const dashscopeApiKey = process.env.DASHSCOPE_API_KEY;
     
     if (!dashscopeApiKey) {
-      console.warn('DASHSCOPE_API_KEY not configured, using placeholder service');
-      
-      // Fallback to placeholder service
-      const placeholderUrls = [
-        'https://picsum.photos/512/512?random=1',
-        'https://picsum.photos/512/512?random=2',
-        'https://picsum.photos/512/512?random=3',
-        'https://picsum.photos/512/512?random=4',
-        'https://picsum.photos/512/512?random=5'
-      ];
-
-      // Simulate generation delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const randomUrl = placeholderUrls[Math.floor(Math.random() * placeholderUrls.length)];
-      
       return NextResponse.json({ 
-        url: randomUrl,
-        prompt: prompt.trim(),
-        service: 'placeholder'
-      });
+        error: 'DASHSCOPE_API_KEY not configured. Please set up your API key to use image generation.' 
+      }, { status: 503 });
     }
 
     // Use DashScope API for image generation
@@ -58,7 +41,7 @@ export async function POST(request: NextRequest) {
           negative_prompt: '',
           prompt_extend: true,
           watermark: false, // Set to false to avoid watermarks
-          size: '1024*1024' // Good balance of quality and file size
+          size: '1328*1328' // Square format from allowed sizes
         }
       }),
     });
@@ -84,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract image URL from response
-    const imageUrl = data.output?.task_result?.images?.[0]?.url;
+    const imageUrl = data.output?.choices?.[0]?.message?.content?.[0]?.image;
     
     if (!imageUrl) {
       console.error('No image URL in response:', data);

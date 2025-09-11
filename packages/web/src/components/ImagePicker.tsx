@@ -53,24 +53,25 @@ export default function ImagePicker({ value, onChange, label = "Image", placehol
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate prompt');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate prompt');
       }
 
       const data = await response.json();
       return data.prompt;
-    } catch (error) {
-      console.error('Prompt generation error:', error);
-      
-      // Fallback to simple template
-      return `A professional, modern image representing "${context}", clean design, high quality`;
     } finally {
       setPromptLoading(false);
     }
   };
 
   const handleSmartGenerate = async () => {
-    const smartPrompt = await generateSmartPrompt();
-    setGeneratePrompt(smartPrompt);
+    try {
+      const smartPrompt = await generateSmartPrompt();
+      setGeneratePrompt(smartPrompt);
+    } catch (error) {
+      console.error('Prompt generation error:', error);
+      alert(`Failed to generate prompt: ${error.message}`);
+    }
   };
 
   const handleSave = () => {
@@ -143,7 +144,8 @@ export default function ImagePicker({ value, onChange, label = "Image", placehol
       });
 
       if (!response.ok) {
-        throw new Error('Image generation failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Image generation failed');
       }
 
       const { url } = await response.json();
@@ -151,7 +153,7 @@ export default function ImagePicker({ value, onChange, label = "Image", placehol
       setGeneratePrompt('');
     } catch (error) {
       console.error('Generation error:', error);
-      alert('Failed to generate image');
+      alert(`Failed to generate image: ${error.message}`);
     } finally {
       setGenerateLoading(false);
     }
