@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 
 export async function POST(request: NextRequest) {
   try {
@@ -74,8 +76,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No image generated' }, { status: 500 });
     }
 
+    // Download image to local uploads directory
+    const downloadResponse = await fetch(imageUrl);
+    if (!downloadResponse.ok) {
+      console.error('Failed to download generated image');
+      return NextResponse.json({ error: 'Failed to download image' }, { status: 500 });
+    }
+
+    const imageBuffer = Buffer.from(await downloadResponse.arrayBuffer());
+    
+    // Create uploads directory if it doesn't exist
+    const uploadDir = join(process.cwd(), 'public', 'uploads');
+    await mkdir(uploadDir, { recursive: true });
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const filename = `generated-${timestamp}.png`;
+    const filepath = join(uploadDir, filename);
+
+    // Write the file
+    await writeFile(filepath, imageBuffer);
+
+    // Return local URL
+    const localUrl = `/uploads/${filename}`;
+
     return NextResponse.json({ 
-      url: imageUrl,
+      url: localUrl,
       prompt: prompt.trim(),
       service: 'dashscope'
     });
