@@ -49,9 +49,19 @@ export function BasicInfoForm({ formData, setFormData }: BasicInfoFormProps) {
         </div>
 
         <div>
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <MarkdownEditor
+          <MarkdownEditor
+            value={formData.description}
+            onChange={(value) =>
+              setFormData((prev) => ({
+                ...prev,
+                description: value,
+              }))
+            }
+            label="Description"
+            placeholder="Describe what this collection is about. Supports **markdown** formatting."
+            rows={6}
+            extra={
+              <TextAssistant
                 value={formData.description}
                 onChange={(value) =>
                   setFormData((prev) => ({
@@ -59,25 +69,12 @@ export function BasicInfoForm({ formData, setFormData }: BasicInfoFormProps) {
                     description: value,
                   }))
                 }
-                label="Description"
-                placeholder="Describe what this collection is about. Supports **markdown** formatting."
-                rows={6}
+                context={`Collection titled: ${formData.title || 'new collection'}`}
+                type="description"
+                placeholder="Describe what this collection is about"
               />
-            </div>
-            <TextAssistant
-              value={formData.description}
-              onChange={(value) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: value,
-                }))
-              }
-              context={`Collection titled: ${formData.title || 'new collection'}`}
-              type="description"
-              placeholder="Describe what this collection is about"
-              triggerClassName="h-10"
-            />
-          </div>
+            }
+          />
         </div>
 
         <div>

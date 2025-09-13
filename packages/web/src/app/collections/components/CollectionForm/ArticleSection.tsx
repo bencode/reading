@@ -73,29 +73,26 @@ export function ArticleSection({
           </div>
 
           <div>
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <MarkdownEditor
+            <MarkdownEditor
+              value={section.description || ''}
+              onChange={(value) =>
+                onUpdate(index, 'description', value)
+              }
+              label="Custom Description"
+              placeholder="Add custom description or commentary. Supports **markdown** formatting."
+              rows={6}
+              extra={
+                <TextAssistant
                   value={section.description || ''}
                   onChange={(value) =>
                     onUpdate(index, 'description', value)
                   }
-                  label="Custom Description"
-                  placeholder="Add custom description or commentary. Supports **markdown** formatting."
-                  rows={6}
+                  context={`Article: ${section.article?.title || 'article'} from ${section.article?.source_name || 'source'}`}
+                  type="description"
+                  placeholder="Add custom description or commentary"
                 />
-              </div>
-              <TextAssistant
-                value={section.description || ''}
-                onChange={(value) =>
-                  onUpdate(index, 'description', value)
-                }
-                context={`Article: ${section.article?.title || 'article'} from ${section.article?.source_name || 'source'}`}
-                type="description"
-                placeholder="Add custom description or commentary"
-                triggerClassName="h-10"
-              />
-            </div>
+              }
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-4">
