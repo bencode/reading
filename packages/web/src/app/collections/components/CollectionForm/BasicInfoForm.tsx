@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { CollectionFormStatus } from '@/services/collectionService'
-import ImagePicker from '@/components/ImagePicker'
+import { ImagePicker } from '@/components/ImagePicker'
 import TextOptimizer from '@/components/TextOptimizer'
 
 type CollectionFormData = {
