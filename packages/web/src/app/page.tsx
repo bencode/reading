@@ -30,48 +30,44 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
+      {/* Simple Header */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-16 max-w-4xl text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            Weekly Reading
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Curated collections of the most interesting articles, 
-            organized and summarized for your reading pleasure.
-          </p>
-          
-          <div className="flex gap-4 justify-center">
-            <Link href="/articles">
-              <Button size="lg">
-                Browse All Articles
-                <ArrowRightIcon className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+        <div className="container mx-auto px-4 py-6 max-w-6xl">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Weekly Reading</h1>
+              <p className="text-sm text-gray-600">Curated article collections</p>
+            </div>
             
-            {isAuthenticated && (
-              <Link href="/collections">
-                <Button variant="outline" size="lg">
-                  Manage Collections
+            <div className="flex gap-3">
+              <Link href="/articles">
+                <Button>
+                  Browse Articles
+                  <ArrowRightIcon className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
-            )}
+              
+              {isAuthenticated && (
+                <Link href="/collections">
+                  <Button variant="outline">
+                    Manage Collections
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Collections List */}
-      <div className="container mx-auto px-4 py-12 max-w-6xl">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Latest Collections</h2>
-            <p className="text-gray-600">Recent weekly collections</p>
-          </div>
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Latest Collections</h2>
           
           {collections.length > 0 && isAuthenticated && (
             <Link href="/collections">
-              <Button variant="outline">
-                Manage Issues
+              <Button variant="outline" size="sm">
+                Manage Collections
                 <ArrowRightIcon className="w-4 h-4 ml-2" />
               </Button>
             </Link>
@@ -79,12 +75,12 @@ export default function HomePage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12">
-            <div className="text-lg text-gray-600">Loading issues...</div>
+          <div className="text-center py-8">
+            <div className="text-gray-600">Loading collections...</div>
           </div>
         ) : collections.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-lg text-gray-600 mb-4">No collections published yet</div>
+          <div className="text-center py-8">
+            <div className="text-gray-600 mb-4">No collections published yet</div>
             {isAuthenticated && (
               <Link href="/collections/new">
                 <Button>Create your first collection</Button>
@@ -97,15 +93,8 @@ export default function HomePage() {
               <Card key={collection.id} className="hover:shadow-lg transition-shadow group cursor-pointer">
                 <Link href={`/weekly/${collection.id}`}>
                   <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start mb-3">
-                      <Badge variant="default">Published</Badge>
-                      <span className="text-sm text-gray-500">
-                        {new Date(collection.published_at || collection.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    
                     {collection.cover_image && (
-                      <div className="w-full h-48 rounded-lg overflow-hidden mb-4">
+                      <div className="w-full h-48 rounded-lg overflow-hidden">
                         <img
                           src={collection.cover_image}
                           alt={collection.title}
@@ -128,8 +117,8 @@ export default function HomePage() {
                     
                     <div className="flex justify-between items-center text-sm text-gray-500">
                       <span>{collection.sections?.length || 0} articles</span>
-                      <span className="group-hover:text-blue-600 transition-colors">
-                        Read more →
+                      <span>
+                        {new Date(collection.published_at || collection.created_at).toLocaleDateString()}
                       </span>
                     </div>
                   </CardContent>

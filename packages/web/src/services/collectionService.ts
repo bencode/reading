@@ -160,11 +160,26 @@ export async function getCollections(options: {
     .limit(limit)
     .offset(offset) as Collection[];
   
+  // Get sections count for each collection
+  const collectionsWithSectionCounts = await Promise.all(
+    collections.map(async (collection) => {
+      const sectionCount = await db('collection_sections')
+        .where('collection_id', collection.id)
+        .count('* as count')
+        .first();
+      
+      return {
+        ...collection,
+        sections: Array(sectionCount?.count as number || 0).fill(null)
+      };
+    })
+  );
+  
   const totalPages = Math.ceil(total / limit);
   const page = Math.floor(offset / limit) + 1;
   
   return {
-    data: collections,
+    data: collectionsWithSectionCounts,
     total,
     page,
     limit,
