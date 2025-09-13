@@ -26,6 +26,7 @@ import { Article, PaginatedResponse } from '@/services/articleService'
 import type { CollectionSection, Collection, CollectionFormStatus } from '@/services/collectionService'
 import { TrashIcon, PlusIcon } from '@radix-ui/react-icons'
 import ImagePicker from '@/components/ImagePicker'
+import TextOptimizer from '@/components/TextOptimizer'
 
 type CollectionFormData = {
   title: string
@@ -259,18 +260,19 @@ export default function CollectionForm({ initialData, mode }: CollectionFormProp
               </div>
 
               <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
+                <TextOptimizer
                   value={formData.description}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData((prev) => ({
                       ...prev,
-                      description: e.target.value,
+                      description: value,
                     }))
                   }
+                  label="Description"
                   placeholder="Describe what this collection is about"
                   rows={4}
+                  context={`Collection titled: ${formData.title || 'new collection'}`}
+                  type="description"
                 />
               </div>
 
@@ -503,21 +505,16 @@ export default function CollectionForm({ initialData, mode }: CollectionFormProp
                           </div>
 
                           <div>
-                            <Label htmlFor={`section-description-${index}`}>
-                              Custom Description
-                            </Label>
-                            <Textarea
-                              id={`section-description-${index}`}
+                            <TextOptimizer
                               value={section.description || ''}
-                              onChange={(e) =>
-                                updateSection(
-                                  index,
-                                  'description',
-                                  e.target.value,
-                                )
+                              onChange={(value) =>
+                                updateSection(index, 'description', value)
                               }
+                              label="Custom Description"
                               placeholder="Add custom description or commentary"
                               rows={6}
+                              context={`Article: ${section.article?.title || 'article'} from ${section.article?.source_name || 'source'}`}
+                              type="description"
                             />
                           </div>
 
