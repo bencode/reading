@@ -61,17 +61,8 @@ export default function HomePage() {
 
       {/* Collections List */}
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex justify-between items-center mb-6">
+        <div className="mb-6">
           <h2 className="text-xl font-semibold text-gray-900">Latest Collections</h2>
-          
-          {collections.length > 0 && isAuthenticated && (
-            <Link href="/collections">
-              <Button variant="outline" size="sm">
-                Manage Collections
-                <ArrowRightIcon className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          )}
         </div>
 
         {loading ? (
