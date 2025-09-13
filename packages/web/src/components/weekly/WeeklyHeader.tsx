@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Collection } from '@/services/collectionService';
 import { ArrowLeftIcon, CalendarIcon, ReaderIcon } from '@radix-ui/react-icons';
 
@@ -11,29 +10,39 @@ type WeeklyHeaderProps = {
 export default function WeeklyHeader({ collection }: WeeklyHeaderProps) {
   return (
     <div className="bg-white border-b">
+      {/* Cover Image */}
+      {collection.cover_image && (
+        <div className="w-full h-64 md:h-80 overflow-hidden">
+          <img
+            src={collection.cover_image}
+            alt={collection.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+      
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center justify-between mb-6">
           <Link href="/">
             <Button variant="outline" size="sm">
               <ArrowLeftIcon className="w-4 h-4 mr-2" />
               Back to Home
             </Button>
           </Link>
-        </div>
-        
-        <div className="flex items-center gap-3 mb-4">
-          <Badge variant="default">Published</Badge>
-          <div className="flex items-center gap-1 text-sm text-gray-500">
-            <CalendarIcon className="w-4 h-4" />
-            {new Date(collection.published_at || collection.created_at).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </div>
-          <div className="flex items-center gap-1 text-sm text-gray-500">
-            <ReaderIcon className="w-4 h-4" />
-            {collection.sections?.length || 0} articles
+          
+          <div className="flex items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-1">
+              <CalendarIcon className="w-4 h-4" />
+              {new Date(collection.published_at || collection.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </div>
+            <div className="flex items-center gap-1">
+              <ReaderIcon className="w-4 h-4" />
+              {collection.sections?.length || 0} articles
+            </div>
           </div>
         </div>
         

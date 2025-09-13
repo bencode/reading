@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useWeeklyCollection } from '@/hooks/useWeeklyCollection';
 import WeeklyHeader from '@/components/weekly/WeeklyHeader';
-import WeeklyCoverImage from '@/components/weekly/WeeklyCoverImage';
 import WeeklyArticleCard from '@/components/weekly/WeeklyArticleCard';
 import WeeklyFooter from '@/components/weekly/WeeklyFooter';
 
@@ -38,14 +37,10 @@ export default function WeeklyCollectionPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <WeeklyHeader collection={collection} />
-      
-      {collection.cover_image && (
-        <WeeklyCoverImage imageUrl={collection.cover_image} title={collection.title} />
-      )}
 
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         {collection.sections && collection.sections.length > 0 ? (
-          <div className="space-y-8">
+          <div className="bg-white rounded-lg">
             {collection.sections.map((section, index) => (
               <WeeklyArticleCard key={section.id} section={section} index={index} />
             ))}
