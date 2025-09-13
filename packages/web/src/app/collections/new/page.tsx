@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import CollectionForm from '@/components/IssueForm';
+import CollectionForm from '@/components/CollectionForm';
 
 export default function NewCollectionPage() {
   const { isAuthenticated, isLoading } = useAuth();
