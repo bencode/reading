@@ -11,7 +11,7 @@ export default function WeeklyHeader({ collection }: WeeklyHeaderProps) {
     <div className="bg-white border-b">
       {/* Cover Image */}
       {collection.cover_image && (
-        <div className="w-full h-64 md:h-80 overflow-hidden">
+        <div className="w-full h-48 md:h-56 overflow-hidden">
           <img
             src={collection.cover_image}
             alt={collection.title}
@@ -43,7 +43,7 @@ export default function WeeklyHeader({ collection }: WeeklyHeaderProps) {
           </div>
         </div>
         
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">{collection.title}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">{collection.title}</h1>
         
         {collection.description && (
           <p className="text-lg text-gray-600 leading-relaxed max-w-3xl">

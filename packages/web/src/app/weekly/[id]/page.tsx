@@ -38,7 +38,7 @@ export default function WeeklyCollectionPage() {
     <div className="min-h-screen bg-gray-50">
       <WeeklyHeader collection={collection} />
 
-      <div className="container mx-auto px-4 py-4 max-w-4xl">
+      <div className="container mx-auto py-4 max-w-4xl">
         {collection.sections && collection.sections.length > 0 ? (
           <div className="bg-white rounded-lg">
             {collection.sections.map((section, index) => (
@@ -46,7 +46,7 @@ export default function WeeklyCollectionPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-12 px-4">
             <div className="text-lg text-gray-600">No articles in this collection</div>
           </div>
         )}
