@@ -41,10 +41,14 @@ Run from `packages/tasks/`:
 - `pip install -r requirements.txt` - Install dependencies
 - `python scraper.py` - Run article scraper
 - `python main.py` - Run LLM summarization
-- `yoyo apply` - Apply database migrations
 - `make lint` - Run code quality checks (flake8, black --check, isort --check)
 - `make format` - Format code with black and isort
 - `make check` - Run lint checks (alias for make lint)
+
+### Database Migrations
+Run from project root:
+- `yoyo apply -d sqlite:///data/reading.db packages/tasks/migrations/` - Apply all pending migrations
+- `yoyo list -d sqlite:///data/reading.db packages/tasks/migrations/` - List migration status
 
 ### Workspace Level
 Run from root:
@@ -54,6 +58,26 @@ Run from root:
 
 - Python backend expects `LLM_API_ENDPOINT` and `LLM_API_KEY` environment variables for LLM integration
 - Database path is hardcoded relative to project root: `../../data/reading.db`
+- For AI image generation, set `DASHSCOPE_API_KEY` environment variable (optional - will use placeholder service if not set)
+
+### Authentication Setup
+The web application uses password-based authentication for admin features. To set up or reset the admin password:
+
+1. Generate a password hash:
+   ```bash
+   cd packages/web
+   node generate-hash.js your-new-password
+   ```
+
+2. Add the generated hash to your `.env.local` file:
+   ```
+   ADMIN_PASSWORD_HASH_ENCODED=<generated-hash>
+   ```
+
+3. Access the auth page with a valid access token:
+   ```
+   http://localhost:3000/auth?token=your-secret-access-token
+   ```
 
 ## Database Migrations
 

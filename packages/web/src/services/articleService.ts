@@ -26,7 +26,7 @@ export interface Tag {
   name: string;
 }
 
-export interface PaginatedResponse<T> {
+export type PaginatedResponse<T> = {
   data: T[];
   total: number;
   page: number;
