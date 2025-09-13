@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { CollectionFormStatus } from '@/services/collectionService'
+import { MarkdownEditor } from '@/components/MarkdownEditor'
+import { TextAssistant } from '@/components/TextAssistant'
 import { ImagePicker } from '@/components/ImagePicker'
 import TextOptimizer from '@/components/TextOptimizer'
 
@@ -47,20 +49,35 @@ export function BasicInfoForm({ formData, setFormData }: BasicInfoFormProps) {
         </div>
 
         <div>
-          <TextOptimizer
-            value={formData.description}
-            onChange={(value) =>
-              setFormData((prev) => ({
-                ...prev,
-                description: value,
-              }))
-            }
-            label="Description"
-            placeholder="Describe what this collection is about"
-            rows={4}
-            context={`Collection titled: ${formData.title || 'new collection'}`}
-            type="description"
-          />
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <MarkdownEditor
+                value={formData.description}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: value,
+                  }))
+                }
+                label="Description"
+                placeholder="Describe what this collection is about. Supports **markdown** formatting."
+                rows={6}
+              />
+            </div>
+            <TextAssistant
+              value={formData.description}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: value,
+                }))
+              }
+              context={`Collection titled: ${formData.title || 'new collection'}`}
+              type="description"
+              placeholder="Describe what this collection is about"
+              triggerClassName="h-10"
+            />
+          </div>
         </div>
 
         <div>

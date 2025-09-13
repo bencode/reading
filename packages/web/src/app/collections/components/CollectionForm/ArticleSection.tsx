@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { MarkdownEditor } from '@/components/MarkdownEditor'
+import { TextAssistant } from '@/components/TextAssistant'
 import { ImagePicker } from '@/components/ImagePicker'
 import TextOptimizer from '@/components/TextOptimizer'
 
@@ -71,17 +73,29 @@ export function ArticleSection({
           </div>
 
           <div>
-            <TextOptimizer
-              value={section.description || ''}
-              onChange={(value) =>
-                onUpdate(index, 'description', value)
-              }
-              label="Custom Description"
-              placeholder="Add custom description or commentary"
-              rows={6}
-              context={`Article: ${section.article?.title || 'article'} from ${section.article?.source_name || 'source'}`}
-              type="description"
-            />
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <MarkdownEditor
+                  value={section.description || ''}
+                  onChange={(value) =>
+                    onUpdate(index, 'description', value)
+                  }
+                  label="Custom Description"
+                  placeholder="Add custom description or commentary. Supports **markdown** formatting."
+                  rows={6}
+                />
+              </div>
+              <TextAssistant
+                value={section.description || ''}
+                onChange={(value) =>
+                  onUpdate(index, 'description', value)
+                }
+                context={`Article: ${section.article?.title || 'article'} from ${section.article?.source_name || 'source'}`}
+                type="description"
+                placeholder="Add custom description or commentary"
+                triggerClassName="h-10"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
