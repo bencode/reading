@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { toggleArticleReadStatus, toggleArticleStarred, rateArticle, toggleArticleDeleted } from '../../../../services/articleService';
+import { toggleArticleReadStatus, toggleArticleStarred, toggleArticleSkipStatus, rateArticle, toggleArticleDeleted } from '../../../../services/articleService';
 import { withAuth } from '../../../../lib/middleware';
 
 const actionHandlers = {
   toggle_read: async (articleId: number) => ({
     is_read: await toggleArticleReadStatus(articleId)
+  }),
+  toggle_skip: async (articleId: number) => ({
+    is_skipped: await toggleArticleSkipStatus(articleId)
   }),
   toggle_starred: async (articleId: number) => ({
     starred: await toggleArticleStarred(articleId)

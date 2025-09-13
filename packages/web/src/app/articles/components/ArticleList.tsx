@@ -7,6 +7,7 @@ type ArticleListProps = {
   articles: Article[]
   isAuthenticated: boolean
   onToggleRead: (articleId: number, currentStatus: boolean) => void
+  onToggleSkip: (articleId: number, currentStatus: boolean) => void
   onToggleStarred: (articleId: number, currentStatus: boolean) => void
   onToggleDeleted: (articleId: number, currentStatus: boolean) => void
   onRateArticle: (articleId: number, rating: number | null) => void
@@ -16,6 +17,7 @@ export default function ArticleList({
   articles,
   isAuthenticated,
   onToggleRead,
+  onToggleSkip,
   onToggleStarred,
   onToggleDeleted,
   onRateArticle
@@ -28,6 +30,7 @@ export default function ArticleList({
           article={article}
           isAuthenticated={isAuthenticated}
           onToggleRead={onToggleRead}
+          onToggleSkip={onToggleSkip}
           onToggleStarred={onToggleStarred}
           onToggleDeleted={onToggleDeleted}
           onRateArticle={onRateArticle}

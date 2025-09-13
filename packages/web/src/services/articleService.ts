@@ -9,6 +9,7 @@ export interface Article {
   published_at: string;
   created_at: string;
   is_read: boolean;
+  is_skipped: boolean;
   starred: boolean;
   rating: number | null;
   deleted: boolean;
@@ -47,6 +48,7 @@ export interface ArticleFilters {
   categoryId?: number;
   starred?: boolean;
   read?: boolean;
+  skip?: boolean;
   deleted?: boolean;
   search?: string;
 }
@@ -96,6 +98,15 @@ export async function getArticles(
   } else if (filters.read === false) {
     query = query.where('a.is_read', false);
     countQuery = countQuery.where('a.is_read', false);
+  }
+  
+  // Filter by skip status
+  if (filters.skip === true) {
+    query = query.where('a.is_skipped', true);
+    countQuery = countQuery.where('a.is_skipped', true);
+  } else if (filters.skip === false) {
+    query = query.where('a.is_skipped', false);
+    countQuery = countQuery.where('a.is_skipped', false);
   }
   
   // Filter by search term
@@ -164,6 +175,27 @@ export async function toggleArticleReadStatus(id: number): Promise<boolean> {
   await db('articles')
     .where('id', id)
     .update({ is_read: newStatus });
+  
+  return newStatus;
+}
+
+export async function toggleArticleSkipStatus(id: number): Promise<boolean> {
+  const db = getDb();
+  
+  // First get current status
+  const currentArticle = await db('articles')
+    .select('is_skipped')
+    .where('id', id)
+    .first();
+  
+  if (!currentArticle) {
+    throw new Error('Article not found');
+  }
+  
+  const newStatus = !currentArticle.is_skipped;
+  await db('articles')
+    .where('id', id)
+    .update({ is_skipped: newStatus });
   
   return newStatus;
 }
@@ -262,6 +294,7 @@ export async function createArticle(data: CreateArticleData): Promise<{ success:
       source_name: data.source_name,
       published_at: data.published_at,
       is_read: false,
+      is_skipped: false,
       starred: false,
       deleted: false,
       rating: null

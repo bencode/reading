@@ -136,6 +136,7 @@ function HomeContent() {
     // Map field names to API actions
     const actionMap: Record<string, string> = {
       'is_read': 'toggle_read',
+      'is_skipped': 'toggle_skip',
       'starred': 'toggle_starred',
       'deleted': 'toggle_deleted'
     };
@@ -158,6 +159,9 @@ function HomeContent() {
 
   const handleToggleReadStatus = (articleId: number, currentStatus: boolean) => 
     handleToggleStatus(articleId, 'is_read', currentStatus);
+
+  const handleToggleSkipStatus = (articleId: number, currentStatus: boolean) => 
+    handleToggleStatus(articleId, 'is_skipped', currentStatus);
 
   const handleToggleStarred = (articleId: number, currentStatus: boolean) => 
     handleToggleStatus(articleId, 'starred', currentStatus);
@@ -254,6 +258,7 @@ function HomeContent() {
           articles={articles}
           isAuthenticated={isAuthenticated}
           onToggleRead={handleToggleReadStatus}
+          onToggleSkip={handleToggleSkipStatus}
           onToggleStarred={handleToggleStarred}
           onToggleDeleted={handleToggleDeleted}
           onRateArticle={handleRateArticle}
