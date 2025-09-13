@@ -1,8 +1,8 @@
-# Reading - Intelligent Article Aggregator
+# Reading - AI-Powered Reading System
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Reading** is an AI-powered RSS aggregator that collects, filters, and organizes tech articles for efficient daily reading. Features weekly reading collections, intelligent article management, and a clean web interface.  
+**Reading** is an intelligent reading system that collects, curates, and organizes tech articles into weekly reading collections. Features AI-powered content processing, rich markdown editing, and a clean web interface for focused reading experiences.  
 🌐 **Demo**: [reading.qijun.io](https://reading.qijun.io/) · 📋 [RSS Sources](packages/tasks/rss_config.yaml)
 
 ---
