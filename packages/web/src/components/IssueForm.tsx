@@ -533,7 +533,7 @@ export default function CollectionForm({ initialData, mode }: CollectionFormProp
 
                             <div>
                               <Label htmlFor={`section-external-${index}`}>
-                                External Image URL
+                                External Link URL
                               </Label>
                               <Input
                                 id={`section-external-${index}`}
@@ -545,8 +545,11 @@ export default function CollectionForm({ initialData, mode }: CollectionFormProp
                                     e.target.value,
                                   )
                                 }
-                                placeholder="https://example.com/image.jpg"
+                                placeholder="https://example.com/additional-resource"
                               />
+                              <p className="text-xs text-gray-500 mt-1">
+                                Optional: Add a link to additional resources or references for this section
+                              </p>
                             </div>
                           </div>
                         </div>
