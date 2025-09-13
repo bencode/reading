@@ -11,6 +11,7 @@ type ArticleListProps = {
   onToggleStarred: (articleId: number, currentStatus: boolean) => void
   onToggleDeleted: (articleId: number, currentStatus: boolean) => void
   onRateArticle: (articleId: number, rating: number | null) => void
+  onUpdateNote: (articleId: number, note: string | null) => void
 }
 
 export default function ArticleList({
@@ -20,7 +21,8 @@ export default function ArticleList({
   onToggleSkip,
   onToggleStarred,
   onToggleDeleted,
-  onRateArticle
+  onRateArticle,
+  onUpdateNote
 }: ArticleListProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -34,6 +36,7 @@ export default function ArticleList({
           onToggleStarred={onToggleStarred}
           onToggleDeleted={onToggleDeleted}
           onRateArticle={onRateArticle}
+          onUpdateNote={onUpdateNote}
         />
       ))}
     </div>

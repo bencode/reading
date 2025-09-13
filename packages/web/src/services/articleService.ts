@@ -13,6 +13,7 @@ export interface Article {
   starred: boolean;
   rating: number | null;
   deleted: boolean;
+  note: string | null;
   tags: Tag[];
 }
 
@@ -238,6 +239,18 @@ export async function rateArticle(id: number, rating: number | null): Promise<vo
   }
 }
 
+export async function updateArticleNote(id: number, note: string | null): Promise<void> {
+  const db = getDb();
+  
+  const result = await db('articles')
+    .where('id', id)
+    .update({ note });
+  
+  if (result === 0) {
+    throw new Error('Article not found');
+  }
+}
+
 export async function toggleArticleDeleted(id: number): Promise<boolean> {
   const db = getDb();
   
@@ -297,7 +310,8 @@ export async function createArticle(data: CreateArticleData): Promise<{ success:
       is_skipped: false,
       starred: false,
       deleted: false,
-      rating: null
+      rating: null,
+      note: null
     });
 
     if (data.category_name) {

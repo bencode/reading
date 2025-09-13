@@ -1,11 +1,13 @@
 'use client'
 
-import { StarIcon, StarFilledIcon, TrashIcon } from '@radix-ui/react-icons'
+import { useState } from 'react'
+import { StarIcon, StarFilledIcon, TrashIcon, Pencil1Icon } from '@radix-ui/react-icons'
 
 import { Article } from '@/services/articleService'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 
 type ArticleCardProps = {
   article: Article
@@ -15,6 +17,7 @@ type ArticleCardProps = {
   onToggleStarred: (articleId: number, currentStatus: boolean) => void
   onToggleDeleted: (articleId: number, currentStatus: boolean) => void
   onRateArticle: (articleId: number, rating: number | null) => void
+  onUpdateNote: (articleId: number, note: string | null) => void
 }
 
 export default function ArticleCard({
@@ -24,8 +27,21 @@ export default function ArticleCard({
   onToggleSkip,
   onToggleStarred,
   onToggleDeleted,
-  onRateArticle
+  onRateArticle,
+  onUpdateNote
 }: ArticleCardProps) {
+  const [isEditingNote, setIsEditingNote] = useState(false)
+  const [noteValue, setNoteValue] = useState(article.note || '')
+
+  const handleSaveNote = () => {
+    onUpdateNote(article.id, noteValue.trim() || null)
+    setIsEditingNote(false)
+  }
+
+  const handleCancelNote = () => {
+    setNoteValue(article.note || '')
+    setIsEditingNote(false)
+  }
   return (
     <Card className="flex flex-col h-full hover:shadow-lg transition-shadow">
       <CardHeader className="flex-none">
@@ -80,6 +96,48 @@ export default function ArticleCard({
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
         <p className="text-gray-700 mb-4 flex-1 leading-relaxed">{article.summary}</p>
+        
+        {/* Note section */}
+        {isAuthenticated && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-600">Note</span>
+              {!isEditingNote && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditingNote(true)}
+                  className="p-1 h-6 w-6"
+                >
+                  <Pencil1Icon className="w-3 h-3" />
+                </Button>
+              )}
+            </div>
+            
+            {isEditingNote ? (
+              <div className="space-y-2">
+                <Textarea
+                  value={noteValue}
+                  onChange={(e) => setNoteValue(e.target.value)}
+                  placeholder="Add your note..."
+                  className="min-h-[60px] text-sm"
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleSaveNote}>Save</Button>
+                  <Button size="sm" variant="outline" onClick={handleCancelNote}>Cancel</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="min-h-[20px]">
+                {article.note ? (
+                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{article.note}</p>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">No note added</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="flex items-center gap-2">
