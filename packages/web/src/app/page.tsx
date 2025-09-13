@@ -88,23 +88,23 @@ export default function HomePage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {collections.map((collection) => (
-              <Card key={collection.id} className="hover:shadow-lg transition-shadow group cursor-pointer">
+              <Card key={collection.id} className="hover:shadow-lg transition-shadow group cursor-pointer overflow-hidden p-0">
                 <Link href={`/weekly/${collection.id}`}>
-                  <CardHeader className="pb-3">
-                    {collection.cover_image && (
-                      <div className="w-full h-48 rounded-lg overflow-hidden">
-                        <img
-                          src={collection.cover_image}
-                          alt={collection.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    )}
-                  </CardHeader>
+                  {/* Card Header - Image (no padding) */}
+                  {collection.cover_image && (
+                    <div className="w-full h-48 overflow-hidden">
+                      <img
+                        src={collection.cover_image}
+                        alt={collection.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
                   
-                  <CardContent>
+                  {/* Card Body - Content (with padding) */}
+                  <div className="p-4">
                     <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
                       {collection.title}
                     </h3>
@@ -121,7 +121,7 @@ export default function HomePage() {
                         {new Date(collection.published_at || collection.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                  </CardContent>
+                  </div>
                 </Link>
               </Card>
             ))}
