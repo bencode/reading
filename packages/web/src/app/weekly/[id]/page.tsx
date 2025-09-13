@@ -38,7 +38,7 @@ export default function WeeklyCollectionPage() {
     <div className="min-h-screen bg-gray-50">
       <WeeklyHeader collection={collection} />
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-4 max-w-4xl">
         {collection.sections && collection.sections.length > 0 ? (
           <div className="bg-white rounded-lg">
             {collection.sections.map((section, index) => (

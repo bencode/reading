@@ -27,7 +27,7 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
       )}
       
       {/* Article Body - Text content (with padding) */}
-      <div className="px-6 py-8">
+      <div className="px-4 py-6">
         {/* Article Title */}
         <h2 className="text-2xl font-semibold text-gray-900 mb-3">
           {section.title || section.article?.title || 'Untitled'}
