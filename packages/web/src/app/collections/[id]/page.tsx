@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collection } from '@/services/collectionService';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeftIcon, Pencil1Icon, ExternalLinkIcon } from '@radix-ui/react-icons';
+import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 
 export default function CollectionDetailPage() {
   const { isAuthenticated } = useAuth();
@@ -109,7 +110,10 @@ export default function CollectionDetailPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">{collection.title}</h1>
           
           {collection.description && (
-            <p className="text-lg text-gray-600 leading-relaxed">{collection.description}</p>
+            <MarkdownRenderer 
+              content={collection.description}
+              className="text-lg text-gray-600"
+            />
           )}
         </div>
 
@@ -197,17 +201,21 @@ export default function CollectionDetailPage() {
                         </div>
                         
                         {section.description && (
-                          <p className="text-gray-600 mb-3 leading-relaxed">
-                            {section.description}
-                          </p>
+                          <div className="mb-3">
+                            <MarkdownRenderer 
+                              content={section.description}
+                              className="text-gray-600"
+                            />
+                          </div>
                         )}
                         
                         {section.article?.summary && (
                           <div className="bg-gray-50 rounded-lg p-4">
                             <h4 className="font-medium text-gray-900 mb-2">Summary</h4>
-                            <p className="text-gray-700 text-sm leading-relaxed">
-                              {section.article.summary}
-                            </p>
+                            <MarkdownRenderer 
+                              content={section.article.summary}
+                              className="text-gray-700 text-sm"
+                            />
                           </div>
                         )}
                       </div>

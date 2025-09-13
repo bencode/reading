@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Collection } from '@/services/collectionService';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
+import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 
 type Section = NonNullable<Collection['sections']>[0];
 
@@ -50,9 +51,10 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
         {/* Description/Content */}
         {displayContent && (
           <div className="mb-6">
-            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-              {displayContent}
-            </p>
+            <MarkdownRenderer 
+              content={displayContent}
+              className="text-gray-700"
+            />
           </div>
         )}
         
