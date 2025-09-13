@@ -1,6 +1,9 @@
 import { getDb } from '../lib/db';
 import { Article } from './articleService';
 
+export type CollectionStatus = 'draft' | 'published' | 'archived';
+export type CollectionFormStatus = 'draft' | 'published';
+
 export type PaginatedResponse<T> = {
   data: T[];
   total: number;
@@ -9,21 +12,21 @@ export type PaginatedResponse<T> = {
   totalPages: number;
 }
 
-export type Issue = {
+export type Collection = {
   id: number;
   title: string;
   description: string | null;
   cover_image: string | null;
-  status: 'draft' | 'published' | 'archived';
+  status: CollectionStatus;
   created_at: string;
   published_at: string | null;
   updated_at: string;
-  sections?: IssueSection[];
+  sections?: CollectionSection[];
 }
 
-export type IssueSection = {
+export type CollectionSection = {
   id: number;
-  issue_id: number;
+  collection_id: number;
   article_id: number;
   title: string | null;
   description: string | null;
@@ -31,17 +34,17 @@ export type IssueSection = {
   external_url: string | null;
   order_index: number;
   created_at: string;
-  article?: Article;
+  article?: Pick<Article, 'id' | 'title' | 'summary' | 'original_url' | 'source_name' | 'published_at'>;
 }
 
-export type CreateIssueData = {
+export type CreateCollectionData = {
   title: string;
   description?: string;
   cover_image?: string;
-  status?: 'draft' | 'published';
+  status?: CollectionFormStatus;
 }
 
-export type CreateIssueSectionData = {
+export type CreateCollectionSectionData = {
   article_id: number;
   title?: string;
   description?: string;
@@ -50,14 +53,14 @@ export type CreateIssueSectionData = {
   order_index?: number;
 }
 
-export type UpdateIssueData = {
+export type UpdateCollectionData = {
   title?: string;
   description?: string;
   cover_image?: string;
-  status?: 'draft' | 'published' | 'archived';
+  status?: CollectionStatus;
 }
 
-export type UpdateIssueSectionData = {
+export type UpdateCollectionSectionData = {
   title?: string;
   description?: string;
   image?: string;
@@ -65,32 +68,36 @@ export type UpdateIssueSectionData = {
   order_index?: number;
 }
 
-// Issues CRUD operations
-export async function createIssue(data: CreateIssueData): Promise<Issue> {
+// Collections CRUD operations
+export async function createCollection(data: CreateCollectionData): Promise<Collection> {
   const db = getDb();
   
-  const [issueId] = await db('issues').insert({
+  const [collectionId] = await db('collections').insert({
     title: data.title,
     description: data.description || null,
     cover_image: data.cover_image || null,
     status: data.status || 'draft'
   });
   
-  return await getIssue(issueId);
+  const result = await getCollection(collectionId);
+  if (!result) {
+    throw new Error('Failed to create collection');
+  }
+  return result;
 }
 
-export async function getIssue(id: number): Promise<Issue | null> {
+export async function getCollection(id: number): Promise<Collection | null> {
   const db = getDb();
   
-  const issue = await db('issues')
+  const collection = await db('collections')
     .select('*')
     .where('id', id)
-    .first() as Issue | undefined;
+    .first() as Collection | undefined;
     
-  if (!issue) return null;
+  if (!collection) return null;
   
   // Get sections with article data
-  const sections = await db('issue_sections as s')
+  const sections = await db('collection_sections as s')
     .select(
       's.*',
       'a.title as article_title',
@@ -100,12 +107,12 @@ export async function getIssue(id: number): Promise<Issue | null> {
       'a.published_at as article_published_at'
     )
     .leftJoin('articles as a', 's.article_id', 'a.id')
-    .where('s.issue_id', id)
+    .where('s.collection_id', id)
     .orderBy('s.order_index', 'asc');
     
   const sectionsWithArticles = sections.map(section => ({
     id: section.id,
-    issue_id: section.issue_id,
+    collection_id: section.collection_id,
     article_id: section.article_id,
     title: section.title,
     description: section.description,
@@ -124,21 +131,21 @@ export async function getIssue(id: number): Promise<Issue | null> {
   }));
   
   return {
-    ...issue,
+    ...collection,
     sections: sectionsWithArticles
   };
 }
 
-export async function getIssues(options: {
+export async function getCollections(options: {
   status?: string;
   limit?: number;
   offset?: number;
-} = {}): Promise<PaginatedResponse<Issue>> {
+} = {}): Promise<PaginatedResponse<Collection>> {
   const db = getDb();
   const { status, limit = 20, offset = 0 } = options;
   
-  let query = db('issues').select('*');
-  let countQuery = db('issues');
+  let query = db('collections').select('*');
+  let countQuery = db('collections');
   
   if (status) {
     query = query.where('status', status);
@@ -148,16 +155,16 @@ export async function getIssues(options: {
   const countResult = await countQuery.count('* as total').first();
   const total = countResult?.total as number || 0;
   
-  const issues = await query
+  const collections = await query
     .orderBy('created_at', 'desc')
     .limit(limit)
-    .offset(offset) as Issue[];
+    .offset(offset) as Collection[];
   
   const totalPages = Math.ceil(total / limit);
   const page = Math.floor(offset / limit) + 1;
   
   return {
-    data: issues,
+    data: collections,
     total,
     page,
     limit,
@@ -165,10 +172,10 @@ export async function getIssues(options: {
   };
 }
 
-export async function updateIssue(id: number, updates: UpdateIssueData): Promise<Issue | null> {
+export async function updateCollection(id: number, updates: UpdateCollectionData): Promise<Collection | null> {
   const db = getDb();
   
-  const updated = await db('issues')
+  const updated = await db('collections')
     .where('id', id)
     .update({
       ...updates,
@@ -177,36 +184,36 @@ export async function updateIssue(id: number, updates: UpdateIssueData): Promise
     
   if (updated === 0) return null;
   
-  return await getIssue(id);
+  return await getCollection(id);
 }
 
-export async function deleteIssue(id: number): Promise<void> {
+export async function deleteCollection(id: number): Promise<void> {
   const db = getDb();
   
   await db.transaction(async (trx) => {
-    await trx('issue_sections').where('issue_id', id).del();
-    await trx('issues').where('id', id).del();
+    await trx('collection_sections').where('collection_id', id).del();
+    await trx('collections').where('id', id).del();
   });
 }
 
-// Issue Sections CRUD operations
-export async function createIssueSection(
-  issueId: number, 
-  data: CreateIssueSectionData
-): Promise<IssueSection> {
+// Collection Sections CRUD operations
+export async function createCollectionSection(
+  collectionId: number, 
+  data: CreateCollectionSectionData
+): Promise<CollectionSection> {
   const db = getDb();
   
   let orderIndex = data.order_index;
   if (orderIndex === undefined) {
-    const lastSection = await db('issue_sections')
-      .where('issue_id', issueId)
+    const lastSection = await db('collection_sections')
+      .where('collection_id', collectionId)
       .orderBy('order_index', 'desc')
       .first();
     orderIndex = lastSection ? lastSection.order_index + 1 : 0;
   }
   
-  const [sectionId] = await db('issue_sections').insert({
-    issue_id: issueId,
+  const [sectionId] = await db('collection_sections').insert({
+    collection_id: collectionId,
     article_id: data.article_id,
     title: data.title || null,
     description: data.description || null,
@@ -215,13 +222,14 @@ export async function createIssueSection(
     order_index: orderIndex
   });
   
-  return await getIssueSection(sectionId);
+  const result = await getCollectionSection(sectionId);
+  return result!;
 }
 
-export async function getIssueSection(id: number): Promise<IssueSection | null> {
+export async function getCollectionSection(id: number): Promise<CollectionSection | null> {
   const db = getDb();
   
-  const section = await db('issue_sections as s')
+  const section = await db('collection_sections as s')
     .select(
       's.*',
       'a.title as article_title',
@@ -238,7 +246,7 @@ export async function getIssueSection(id: number): Promise<IssueSection | null> 
   
   return {
     id: section.id,
-    issue_id: section.issue_id,
+    collection_id: section.collection_id,
     article_id: section.article_id,
     title: section.title,
     description: section.description,
@@ -257,13 +265,13 @@ export async function getIssueSection(id: number): Promise<IssueSection | null> 
   };
 }
 
-export async function updateIssueSection(
+export async function updateCollectionSection(
   id: number, 
-  updates: UpdateIssueSectionData
-): Promise<IssueSection | null> {
+  updates: UpdateCollectionSectionData
+): Promise<CollectionSection | null> {
   const db = getDb();
   
-  const updated = await db('issue_sections')
+  const updated = await db('collection_sections')
     .where('id', id)
     .update({
       ...updates,
@@ -272,10 +280,10 @@ export async function updateIssueSection(
     
   if (updated === 0) return null;
   
-  return await getIssueSection(id);
+  return await getCollectionSection(id);
 }
 
-export async function deleteIssueSection(id: number): Promise<void> {
+export async function deleteCollectionSection(id: number): Promise<void> {
   const db = getDb();
-  await db('issue_sections').where('id', id).del();
+  await db('collection_sections').where('id', id).del();
 }

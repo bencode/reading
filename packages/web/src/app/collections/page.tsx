@@ -6,13 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Issue, PaginatedResponse } from '@/services/issueService';
+import { Collection, PaginatedResponse } from '@/services/collectionService';
 import { useAuth } from '@/contexts/AuthContext';
 import { PlusIcon } from '@radix-ui/react-icons';
 
-export default function IssuesPage() {
+export default function CollectionsPage() {
   const { isAuthenticated, isLoading } = useAuth();
-  const [issues, setIssues] = useState<Issue[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [pagination, setPagination] = useState({
@@ -22,7 +22,7 @@ export default function IssuesPage() {
     totalPages: 0
   });
 
-  const fetchIssues = async (status?: string, page: number = 1) => {
+  const fetchCollections = async (status?: string, page: number = 1) => {
     setLoading(true);
     
     const params = new URLSearchParams();
@@ -33,10 +33,10 @@ export default function IssuesPage() {
       params.set('status', status);
     }
     
-    const response = await fetch(`/api/issues?${params}`);
-    const data: PaginatedResponse<Issue> = await response.json();
+    const response = await fetch(`/api/collections?${params}`);
+    const data: PaginatedResponse<Collection> = await response.json();
     
-    setIssues(data.data);
+    setCollections(data.data);
     setPagination({
       page: data.page,
       limit: data.limit,
@@ -49,7 +49,7 @@ export default function IssuesPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchIssues(statusFilter);
+      fetchCollections(statusFilter);
     }
   }, [isAuthenticated, statusFilter]);
 
@@ -59,7 +59,7 @@ export default function IssuesPage() {
   };
 
   const handlePageChange = (newPage: number) => {
-    fetchIssues(statusFilter, newPage);
+    fetchCollections(statusFilter, newPage);
   };
 
   const getStatusColor = (status: string) => {
@@ -70,7 +70,7 @@ export default function IssuesPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-lg">Please log in to access Issues</div>
+        <div className="text-lg">Please log in to access Collections</div>
       </div>
     );
   }
@@ -80,14 +80,14 @@ export default function IssuesPage() {
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Issues</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Collections</h1>
             <p className="text-gray-600">Curated article collections</p>
           </div>
           
-          <Link href="/issues/new">
+          <Link href="/collections/new">
             <Button>
               <PlusIcon className="w-4 h-4 mr-2" />
-              New Issue
+              New Collection
             </Button>
           </Link>
         </div>
@@ -111,38 +111,38 @@ export default function IssuesPage() {
 
         {loading ? (
           <div className="text-center py-12">
-            <div className="text-lg text-gray-600">Loading issues...</div>
+            <div className="text-lg text-gray-600">Loading collections...</div>
           </div>
-        ) : issues.length === 0 ? (
+        ) : collections.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-lg text-gray-600 mb-4">No issues found</div>
-            <Link href="/issues/new">
-              <Button>Create your first issue</Button>
+            <div className="text-lg text-gray-600 mb-4">No collections found</div>
+            <Link href="/collections/new">
+              <Button>Create your first collection</Button>
             </Link>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {issues.map((issue) => (
-                <Card key={issue.id} className="hover:shadow-lg transition-shadow">
+              {collections.map((collection) => (
+                <Card key={collection.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
-                      <Badge variant={getStatusColor(issue.status)}>
-                        {issue.status}
+                      <Badge variant={getStatusColor(collection.status)}>
+                        {collection.status}
                       </Badge>
                       <span className="text-xs text-gray-500">
-                        {new Date(issue.created_at).toLocaleDateString()}
+                        {new Date(collection.created_at).toLocaleDateString()}
                       </span>
                     </div>
                   </CardHeader>
                   
                   <CardContent>
                     <div className="space-y-3">
-                      {issue.cover_image && (
+                      {collection.cover_image && (
                         <div className="w-full h-32 rounded-lg overflow-hidden">
                           <img
-                            src={issue.cover_image}
-                            alt={issue.title}
+                            src={collection.cover_image}
+                            alt={collection.title}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -150,28 +150,28 @@ export default function IssuesPage() {
                       
                       <div>
                         <h3 className="font-semibold text-lg text-gray-900 mb-2">
-                          {issue.title}
+                          {collection.title}
                         </h3>
                         
-                        {issue.description && (
+                        {collection.description && (
                           <p className="text-sm text-gray-600 line-clamp-3">
-                            {issue.description}
+                            {collection.description}
                           </p>
                         )}
                       </div>
                       
                       <div className="flex justify-between items-center pt-2">
                         <span className="text-xs text-gray-500">
-                          {issue.sections?.length || 0} articles
+                          {collection.sections?.length || 0} articles
                         </span>
                         
                         <div className="flex gap-2">
-                          <Link href={`/issues/${issue.id}/edit`}>
+                          <Link href={`/collections/${collection.id}/edit`}>
                             <Button variant="outline" size="sm">
                               Edit
                             </Button>
                           </Link>
-                          <Link href={`/issues/${issue.id}`}>
+                          <Link href={`/collections/${collection.id}`}>
                             <Button size="sm">
                               View
                             </Button>

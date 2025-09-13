@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIssue, updateIssue, deleteIssue, createIssueSection, deleteIssueSection } from '@/services/issueService';
+import { getCollection, updateCollection, deleteCollection, createCollectionSection, deleteCollectionSection } from '@/services/collectionService';
 
 export async function GET(
   request: NextRequest,
@@ -12,13 +12,13 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
   }
 
-  const issue = await getIssue(id);
+  const collection = await getCollection(id);
   
-  if (!issue) {
-    return NextResponse.json({ error: 'Issue not found' }, { status: 404 });
+  if (!collection) {
+    return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
   }
   
-  return NextResponse.json(issue);
+  return NextResponse.json(collection);
 }
 
 export async function PUT(
@@ -34,27 +34,27 @@ export async function PUT(
 
   const { sections, ...updates } = await request.json();
   
-  // Update issue basic info
-  const issue = await updateIssue(id, updates);
+  // Update collection basic info
+  const collection = await updateCollection(id, updates);
   
-  if (!issue) {
-    return NextResponse.json({ error: 'Issue not found' }, { status: 404 });
+  if (!collection) {
+    return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
   }
 
   // Update sections if provided
   if (sections && Array.isArray(sections)) {
     // Delete all existing sections first
-    const currentIssue = await getIssue(id);
-    if (currentIssue?.sections) {
-      for (const section of currentIssue.sections) {
-        await deleteIssueSection(section.id);
+    const currentCollection = await getCollection(id);
+    if (currentCollection?.sections) {
+      for (const section of currentCollection.sections) {
+        await deleteCollectionSection(section.id);
       }
     }
     
     // Create new sections
     for (let i = 0; i < sections.length; i++) {
       const sectionData = sections[i];
-      await createIssueSection(id, {
+      await createCollectionSection(id, {
         article_id: sectionData.article_id,
         title: sectionData.title,
         description: sectionData.description,
@@ -64,12 +64,12 @@ export async function PUT(
       });
     }
     
-    // Refetch issue with sections
-    const updatedIssue = await getIssue(id);
-    return NextResponse.json(updatedIssue);
+    // Refetch collection with sections
+    const updatedCollection = await getCollection(id);
+    return NextResponse.json(updatedCollection);
   }
   
-  return NextResponse.json(issue);
+  return NextResponse.json(collection);
 }
 
 export async function DELETE(
@@ -83,7 +83,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
   }
 
-  await deleteIssue(id);
+  await deleteCollection(id);
   
   return NextResponse.json({ success: true });
 }

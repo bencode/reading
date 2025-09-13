@@ -70,7 +70,7 @@ export default function ImagePicker({ value, onChange, label = "Image", placehol
       setGeneratePrompt(smartPrompt);
     } catch (error) {
       console.error('Prompt generation error:', error);
-      alert(`Failed to generate prompt: ${error.message}`);
+      alert(`Failed to generate prompt: ${(error as Error).message}`);
     }
   };
 
@@ -153,7 +153,7 @@ export default function ImagePicker({ value, onChange, label = "Image", placehol
       setGeneratePrompt('');
     } catch (error) {
       console.error('Generation error:', error);
-      alert(`Failed to generate image: ${error.message}`);
+      alert(`Failed to generate image: ${(error as Error).message}`);
     } finally {
       setGenerateLoading(false);
     }

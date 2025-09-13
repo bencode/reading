@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIssues, createIssue, createIssueSection, getIssue } from '@/services/issueService';
+import { getCollections, createCollection, createCollectionSection, getCollection } from '@/services/collectionService';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1');
   const offset = (page - 1) * limit;
 
-  const result = await getIssues({ status, limit, offset });
+  const result = await getCollections({ status, limit, offset });
   
   return NextResponse.json(result);
 }
@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Title is required' }, { status: 400 });
   }
 
-  // Create issue
-  const issue = await createIssue({
+  // Create collection
+  const collection = await createCollection({
     title: title.trim(),
     description,
     cover_image,
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   if (sections && Array.isArray(sections)) {
     for (let i = 0; i < sections.length; i++) {
       const sectionData = sections[i];
-      await createIssueSection(issue.id, {
+      await createCollectionSection(collection.id, {
         article_id: sectionData.article_id,
         title: sectionData.title,
         description: sectionData.description,
@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
       });
     }
     
-    // Refetch issue with sections
-    const issueWithSections = await getIssue(issue.id);
-    return NextResponse.json(issueWithSections, { status: 201 });
+    // Refetch collection with sections
+    const collectionWithSections = await getCollection(collection.id);
+    return NextResponse.json(collectionWithSections, { status: 201 });
   }
 
-  return NextResponse.json(issue, { status: 201 });
+  return NextResponse.json(collection, { status: 201 });
 }

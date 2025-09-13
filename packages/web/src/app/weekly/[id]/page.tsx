@@ -6,46 +6,46 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Issue } from '@/services/issueService';
+import { Collection } from '@/services/collectionService';
 import { ArrowLeftIcon, ExternalLinkIcon, CalendarIcon, ReaderIcon } from '@radix-ui/react-icons';
 
-export default function WeeklyIssuePage() {
+export default function WeeklyCollectionPage() {
   const params = useParams();
-  const [issue, setIssue] = useState<Issue | null>(null);
+  const [collection, setCollection] = useState<Collection | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const issueId = params.id as string;
+  const collectionId = params.id as string;
 
-  const fetchIssue = async () => {
+  const fetchCollection = async () => {
     setLoading(true);
     
-    const response = await fetch(`/api/issues/${issueId}`);
+    const response = await fetch(`/api/collections/${collectionId}`);
     
     if (!response.ok) {
       if (response.status === 404) {
         notFound();
         return;
       }
-      throw new Error('Failed to fetch issue');
+      throw new Error('Failed to fetch collection');
     }
     
-    const data: Issue = await response.json();
+    const data: Collection = await response.json();
     
-    // Only show published issues in public view
+    // Only show published collections in public view
     if (data.status !== 'published') {
       notFound();
       return;
     }
     
-    setIssue(data);
+    setCollection(data);
     setLoading(false);
   };
 
   useEffect(() => {
-    if (issueId) {
-      fetchIssue();
+    if (collectionId) {
+      fetchCollection();
     }
-  }, [issueId]);
+  }, [collectionId]);
 
   if (loading) {
     return (
@@ -55,11 +55,11 @@ export default function WeeklyIssuePage() {
     );
   }
 
-  if (!issue) {
+  if (!collection) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="text-lg text-gray-600 mb-4">Issue not found</div>
+          <div className="text-lg text-gray-600 mb-4">Collection not found</div>
           <Link href="/">
             <Button>Back to Home</Button>
           </Link>
@@ -86,7 +86,7 @@ export default function WeeklyIssuePage() {
             <Badge variant="default">Published</Badge>
             <div className="flex items-center gap-1 text-sm text-gray-500">
               <CalendarIcon className="w-4 h-4" />
-              {new Date(issue.published_at || issue.created_at).toLocaleDateString('en-US', {
+              {new Date(collection.published_at || collection.created_at).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -94,28 +94,28 @@ export default function WeeklyIssuePage() {
             </div>
             <div className="flex items-center gap-1 text-sm text-gray-500">
               <ReaderIcon className="w-4 h-4" />
-              {issue.sections?.length || 0} articles
+              {collection.sections?.length || 0} articles
             </div>
           </div>
           
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">{issue.title}</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">{collection.title}</h1>
           
-          {issue.description && (
+          {collection.description && (
             <p className="text-lg text-gray-600 leading-relaxed max-w-3xl">
-              {issue.description}
+              {collection.description}
             </p>
           )}
         </div>
       </div>
 
       {/* Cover Image */}
-      {issue.cover_image && (
+      {collection.cover_image && (
         <div className="bg-white">
           <div className="container mx-auto px-4 py-8 max-w-4xl">
             <div className="w-full h-64 md:h-80 rounded-lg overflow-hidden">
               <img
-                src={issue.cover_image}
-                alt={issue.title}
+                src={collection.cover_image}
+                alt={collection.title}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -125,9 +125,9 @@ export default function WeeklyIssuePage() {
 
       {/* Articles */}
       <div className="container mx-auto px-4 py-12 max-w-4xl">
-        {issue.sections && issue.sections.length > 0 ? (
+        {collection.sections && collection.sections.length > 0 ? (
           <div className="space-y-8">
-            {issue.sections.map((section, index) => (
+            {collection.sections.map((section, index) => (
               <Card key={section.id} className="overflow-hidden bg-white">
                 <CardContent className="p-8">
                   <div className="flex gap-8">
@@ -236,7 +236,7 @@ export default function WeeklyIssuePage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="text-lg text-gray-600">No articles in this issue</div>
+            <div className="text-lg text-gray-600">No articles in this collection</div>
           </div>
         )}
       </div>
@@ -252,7 +252,7 @@ export default function WeeklyIssuePage() {
             
             <div className="flex justify-center gap-6 text-sm">
               <Link href="/" className="text-gray-600 hover:text-gray-900">
-                More Issues
+                More Collections
               </Link>
               <Link href="/articles" className="text-gray-600 hover:text-gray-900">
                 All Articles

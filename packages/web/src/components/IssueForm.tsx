@@ -23,34 +23,34 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Article, PaginatedResponse } from '@/services/articleService'
-import { IssueSection, Issue } from '@/services/issueService'
+import type { CollectionSection, Collection, CollectionFormStatus } from '@/services/collectionService'
 import { TrashIcon, PlusIcon } from '@radix-ui/react-icons'
 import ImagePicker from '@/components/ImagePicker'
 
-type IssueFormData = {
+type CollectionFormData = {
   title: string
   description: string
   cover_image: string
-  status: 'draft' | 'published'
-  sections: IssueSection[]
+  status: CollectionFormStatus
+  sections: CollectionSection[]
 }
 
-type IssueFormProps = {
-  initialData?: Issue
+type CollectionFormProps = {
+  initialData?: Collection
   mode: 'create' | 'edit'
 }
 
-export default function IssueForm({ initialData, mode }: IssueFormProps) {
+export default function CollectionForm({ initialData, mode }: CollectionFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [articles, setArticles] = useState<Article[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const [formData, setFormData] = useState<IssueFormData>({
+  const [formData, setFormData] = useState<CollectionFormData>({
     title: initialData?.title || '',
     description: initialData?.description || '',
     cover_image: initialData?.cover_image || '',
-    status: initialData?.status || 'draft',
+    status: (initialData?.status === 'archived' ? 'draft' : initialData?.status) || 'draft',
     sections: initialData?.sections || [],
   })
 
@@ -65,9 +65,9 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
   }, [])
 
   const addSection = (article: Article) => {
-    const newSection: IssueSection = {
+    const newSection: CollectionSection = {
       id: Date.now(), // Temporary ID for frontend
-      issue_id: initialData?.id || 0,
+      collection_id: initialData?.id || 0,
       article_id: article.id,
       title: '',
       description: '',
@@ -95,7 +95,7 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
 
   const updateSection = (
     index: number,
-    field: keyof IssueSection,
+    field: keyof CollectionSection,
     value: string,
   ) => {
     const updatedSections = [...formData.sections]
@@ -117,7 +117,7 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
     setLoading(true)
 
     const apiUrl =
-      mode === 'edit' ? `/api/issues/${initialData!.id}` : '/api/issues'
+      mode === 'edit' ? `/api/collections/${initialData!.id}` : '/api/collections'
     const method = mode === 'edit' ? 'PUT' : 'POST'
 
     const response = await fetch(apiUrl, {
@@ -142,12 +142,12 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
 
     if (!response.ok) {
       const errorData = await response.json()
-      throw new Error(errorData.error || `Failed to ${mode} issue`)
+      throw new Error(errorData.error || `Failed to ${mode} collection`)
     }
 
-    const savedIssue = await response.json()
-    console.log(`Issue ${mode}d:`, savedIssue)
-    router.push('/issues')
+    const savedCollection = await response.json()
+    console.log(`Collection ${mode}d:`, savedCollection)
+    router.push('/collections')
 
     setLoading(false)
   }
@@ -158,7 +158,7 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
     setLoading(true)
 
     const apiUrl =
-      mode === 'edit' ? `/api/issues/${initialData!.id}` : '/api/issues'
+      mode === 'edit' ? `/api/collections/${initialData!.id}` : '/api/collections'
     const method = mode === 'edit' ? 'PUT' : 'POST'
 
     const response = await fetch(apiUrl, {
@@ -183,12 +183,12 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
 
     if (!response.ok) {
       const errorData = await response.json()
-      throw new Error(errorData.error || `Failed to publish issue`)
+      throw new Error(errorData.error || `Failed to publish collection`)
     }
 
-    const savedIssue = await response.json()
-    console.log('Issue published:', savedIssue)
-    router.push('/issues')
+    const savedCollection = await response.json()
+    console.log('Collection published:', savedCollection)
+    router.push('/collections')
 
     setLoading(false)
   }
@@ -198,7 +198,7 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {mode === 'edit' ? 'Edit Issue' : 'Create New Issue'}
+            {mode === 'edit' ? 'Edit Collection' : 'Create New Collection'}
           </h1>
           <p className="text-gray-600">
             {mode === 'edit'
@@ -222,7 +222,7 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  placeholder="Enter issue title"
+                  placeholder="Enter collection title"
                   required
                 />
               </div>
@@ -238,7 +238,7 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
                       description: e.target.value,
                     }))
                   }
-                  placeholder="Describe what this issue is about"
+                  placeholder="Describe what this collection is about"
                   rows={4}
                 />
               </div>
@@ -250,9 +250,8 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
                     setFormData((prev) => ({ ...prev, cover_image: url }))
                   }
                   label="Cover Image"
-                  placeholder="Add a cover image for this issue"
-                  context={`Issue about: ${formData.title || 'various topics'}`}
-                  type="cover"
+                  placeholder="Add a cover image for this collection"
+                  context={`Collection about: ${formData.title || 'various topics'}`}
                 />
               </div>
 
@@ -415,7 +414,6 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
                                 label="Section Image"
                                 placeholder="Add custom image for this section"
                                 context={`Article: ${section.article?.title || 'article'} from ${section.article?.source_name || 'source'}`}
-                                type="section"
                               />
                             </div>
 
@@ -478,7 +476,7 @@ export default function IssueForm({ initialData, mode }: IssueFormProps) {
                   ? 'Publishing...'
                   : mode === 'edit'
                     ? 'Update & Publish'
-                    : 'Publish Issue'}
+                    : 'Publish Collection'}
               </Button>
             </div>
           </div>

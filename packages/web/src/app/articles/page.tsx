@@ -1,6 +1,6 @@
 'use client';
 
-import { Article, Category, PaginatedResponse } from '../services/articleService';
+import { Article, Category, PaginatedResponse } from '@/services/articleService';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

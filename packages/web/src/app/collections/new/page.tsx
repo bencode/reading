@@ -1,9 +1,9 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import IssueForm from '@/components/IssueForm';
+import CollectionForm from '@/components/IssueForm';
 
-export default function NewIssuePage() {
+export default function NewCollectionPage() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -22,5 +22,5 @@ export default function NewIssuePage() {
     );
   }
 
-  return <IssueForm mode="create" />;
+  return <CollectionForm mode="create" />;
 }

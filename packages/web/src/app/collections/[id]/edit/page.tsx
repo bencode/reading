@@ -3,36 +3,36 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Issue } from '@/services/issueService';
-import IssueForm from '@/components/IssueForm';
+import { Collection } from '@/services/collectionService';
+import CollectionForm from '@/components/IssueForm';
 
-export default function EditIssuePage() {
+export default function EditCollectionPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const params = useParams();
-  const [issue, setIssue] = useState<Issue | null>(null);
+  const [collection, setCollection] = useState<Collection | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const issueId = params.id as string;
+  const collectionId = params.id as string;
 
-  const fetchIssue = async () => {
+  const fetchCollection = async () => {
     setLoading(true);
     
-    const response = await fetch(`/api/issues/${issueId}`);
+    const response = await fetch(`/api/collections/${collectionId}`);
     
     if (!response.ok) {
-      throw new Error('Failed to fetch issue');
+      throw new Error('Failed to fetch collection');
     }
     
-    const data: Issue = await response.json();
-    setIssue(data);
+    const data: Collection = await response.json();
+    setCollection(data);
     setLoading(false);
   };
 
   useEffect(() => {
-    if (issueId && isAuthenticated) {
-      fetchIssue();
+    if (collectionId && isAuthenticated) {
+      fetchCollection();
     }
-  }, [issueId, isAuthenticated]);
+  }, [collectionId, isAuthenticated]);
 
   if (isLoading || loading) {
     return (
@@ -50,13 +50,13 @@ export default function EditIssuePage() {
     );
   }
 
-  if (!issue) {
+  if (!collection) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-lg text-gray-600">Issue not found</div>
+        <div className="text-lg text-gray-600">Collection not found</div>
       </div>
     );
   }
 
-  return <IssueForm mode="edit" initialData={issue} />;
+  return <CollectionForm mode="edit" initialData={collection} />;
 }
