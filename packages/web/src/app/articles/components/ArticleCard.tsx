@@ -1,29 +1,47 @@
 'use client'
 
-import { StarIcon, StarFilledIcon, TrashIcon } from '@radix-ui/react-icons'
+import { useState } from 'react'
+import { StarIcon, StarFilledIcon, TrashIcon, Pencil1Icon } from '@radix-ui/react-icons'
 
 import { Article } from '@/services/articleService'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 
 type ArticleCardProps = {
   article: Article
   isAuthenticated: boolean
   onToggleRead: (articleId: number, currentStatus: boolean) => void
+  onToggleSkip: (articleId: number, currentStatus: boolean) => void
   onToggleStarred: (articleId: number, currentStatus: boolean) => void
   onToggleDeleted: (articleId: number, currentStatus: boolean) => void
   onRateArticle: (articleId: number, rating: number | null) => void
+  onUpdateNote: (articleId: number, note: string | null) => void
 }
 
 export default function ArticleCard({
   article,
   isAuthenticated,
   onToggleRead,
+  onToggleSkip,
   onToggleStarred,
   onToggleDeleted,
-  onRateArticle
+  onRateArticle,
+  onUpdateNote
 }: ArticleCardProps) {
+  const [isEditingNote, setIsEditingNote] = useState(false)
+  const [noteValue, setNoteValue] = useState(article.note || '')
+
+  const handleSaveNote = () => {
+    onUpdateNote(article.id, noteValue.trim() || null)
+    setIsEditingNote(false)
+  }
+
+  const handleCancelNote = () => {
+    setNoteValue(article.note || '')
+    setIsEditingNote(false)
+  }
   return (
     <Card className="flex flex-col h-full hover:shadow-lg transition-shadow">
       <CardHeader className="flex-none">
@@ -32,8 +50,11 @@ export default function ArticleCard({
             {article.title}
           </CardTitle>
           <div className="flex items-center gap-2 shrink-0">
-            {!article.is_read && (
+            {!article.is_read && !article.is_skipped && (
               <Badge variant="secondary">New</Badge>
+            )}
+            {!!article.is_skipped && (
+              <Badge variant="outline" className="text-yellow-600 border-yellow-600">Skipped</Badge>
             )}
             {isAuthenticated && (article.deleted ? (
               <Button
@@ -76,41 +97,50 @@ export default function ArticleCard({
       <CardContent className="flex-1 flex flex-col">
         <p className="text-gray-700 mb-4 flex-1 leading-relaxed">{article.summary}</p>
         
-        {isAuthenticated && article.rating !== null && (
-          <div className="flex items-center gap-1 mb-3">
-            <span className="text-sm text-gray-600">Rating:</span>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <StarFilledIcon
-                key={star}
-                className={`w-4 h-4 cursor-pointer ${
-                  star <= article.rating! ? 'text-yellow-400' : 'text-gray-300'
-                }`}
-                onClick={() => onRateArticle(article.id, star)}
-              />
-            ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRateArticle(article.id, null)}
-              className="ml-2 text-xs text-gray-500 h-6 px-2"
-            >
-              Clear
-            </Button>
+        {/* Note section */}
+        {isAuthenticated && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-600">Note</span>
+              {!isEditingNote && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditingNote(true)}
+                  className="p-1 h-6 w-6"
+                >
+                  <Pencil1Icon className="w-3 h-3" />
+                </Button>
+              )}
+            </div>
+            
+            {isEditingNote ? (
+              <div className="space-y-2">
+                <Textarea
+                  value={noteValue}
+                  onChange={(e) => setNoteValue(e.target.value)}
+                  placeholder="Add your note..."
+                  className="min-h-[60px] text-sm"
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleSaveNote}>Save</Button>
+                  <Button size="sm" variant="outline" onClick={handleCancelNote}>Cancel</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="min-h-[20px]">
+                {article.note ? (
+                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{article.note}</p>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">No note added</p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              <a
-                href={article.original_url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View Original
-              </a>
-            </Button>
-            
             {isAuthenticated && (
               <Button
                 variant="ghost"
@@ -137,18 +167,63 @@ export default function ArticleCard({
                 ))}
               </div>
             )}
+            
+            {isAuthenticated && article.rating !== null && (
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-gray-600">Rating:</span>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <StarFilledIcon
+                    key={star}
+                    className={`w-4 h-4 cursor-pointer ${
+                      star <= article.rating! ? 'text-yellow-400' : 'text-gray-300'
+                    }`}
+                    onClick={() => onRateArticle(article.id, star)}
+                  />
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onRateArticle(article.id, null)}
+                  className="ml-2 text-xs text-gray-500 h-6 px-2"
+                >
+                  Clear
+                </Button>
+              </div>
+            )}
           </div>
 
-          {isAuthenticated && (
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => onToggleRead(article.id, article.is_read)}
-              className={article.is_read ? "text-green-600 hover:text-green-700" : "text-gray-500 hover:text-gray-700"}
-            >
-              {article.is_read ? "Mark as Unread" : "Mark as Read"}
+          <div className="flex items-center gap-2">
+            <Button asChild variant="link" size="sm" className="text-blue-600 hover:text-blue-700">
+              <a
+                href={article.original_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View
+              </a>
             </Button>
-          )}
+            
+            {isAuthenticated && (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => onToggleRead(article.id, article.is_read)}
+                  className={article.is_read ? "border-green-200 text-green-700 bg-green-50" : ""}
+                >
+                  {article.is_read ? "Unread" : "Read"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => onToggleSkip(article.id, !!article.is_skipped)}
+                  className={!!article.is_skipped ? "border-yellow-200 text-yellow-700 bg-yellow-50" : ""}
+                >
+                  {!!article.is_skipped ? "Unskip" : "Skip"}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

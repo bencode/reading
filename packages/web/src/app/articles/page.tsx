@@ -136,6 +136,7 @@ function HomeContent() {
     // Map field names to API actions
     const actionMap: Record<string, string> = {
       'is_read': 'toggle_read',
+      'is_skipped': 'toggle_skip',
       'starred': 'toggle_starred',
       'deleted': 'toggle_deleted'
     };
@@ -158,6 +159,9 @@ function HomeContent() {
 
   const handleToggleReadStatus = (articleId: number, currentStatus: boolean) => 
     handleToggleStatus(articleId, 'is_read', currentStatus);
+
+  const handleToggleSkipStatus = (articleId: number, currentStatus: boolean) => 
+    handleToggleStatus(articleId, 'is_skipped', currentStatus);
 
   const handleToggleStarred = (articleId: number, currentStatus: boolean) => 
     handleToggleStatus(articleId, 'starred', currentStatus);
@@ -220,6 +224,34 @@ function HomeContent() {
     }
   };
 
+  const handleUpdateNote = async (articleId: number, note: string | null) => {
+    if (!isAuthenticated) {
+      return; // Don't allow actions if not authenticated
+    }
+
+    // Optimistic update
+    setArticles(articles.map(article => 
+      article.id === articleId 
+        ? { ...article, note: note }
+        : article
+    ));
+
+    const token = localStorage.getItem('auth_token');
+    const response = await fetch(`/api/articles/${articleId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ action: 'update_note', note }),
+    });
+
+    if (!response.ok) {
+      // Revert optimistic update on error
+      fetchArticles(selectedCategory || undefined, currentPage);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
@@ -254,9 +286,11 @@ function HomeContent() {
           articles={articles}
           isAuthenticated={isAuthenticated}
           onToggleRead={handleToggleReadStatus}
+          onToggleSkip={handleToggleSkipStatus}
           onToggleStarred={handleToggleStarred}
           onToggleDeleted={handleToggleDeleted}
           onRateArticle={handleRateArticle}
+          onUpdateNote={handleUpdateNote}
         />
 
         {totalPages > 1 && (
