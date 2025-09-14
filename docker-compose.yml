@@ -3,7 +3,7 @@ services:
   imgproxy:
     image: ghcr.io/imgproxy/imgproxy:latest
     ports:
-      - "8080:8080"
+      - "3011:8080"
     environment:
       - IMGPROXY_BIND=0.0.0.0:8080
       - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/uploads
@@ -14,7 +14,7 @@ services:
       - IMGPROXY_STRIP_METADATA=true
       - IMGPROXY_LOG_LEVEL=warn
     volumes:
-      - ./data:/uploads:ro
+      - ./data/uploads:/uploads:ro
     restart: unless-stopped
     networks:
       - reading_network
