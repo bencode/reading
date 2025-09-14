@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Collection, PaginatedResponse } from '@/services/collectionService';
 import { useAuth } from '@/contexts/AuthContext';
 import { PlusIcon } from '@radix-ui/react-icons';
+import { OptimizedImage } from '@/components/OptimizedImage';
 
 export default function CollectionsPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -140,9 +141,10 @@ export default function CollectionsPage() {
                     <div className="space-y-3">
                       {collection.cover_image && (
                         <div className="w-full h-32 rounded-lg overflow-hidden">
-                          <img
+                          <OptimizedImage
                             src={collection.cover_image}
                             alt={collection.title}
+                            preset="thumbnail"
                             className="w-full h-full object-cover"
                           />
                         </div>

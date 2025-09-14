@@ -9,6 +9,8 @@ import { Collection } from '@/services/collectionService';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
 
+import { OptimizedImage } from '@/components/OptimizedImage';
+
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -86,9 +88,10 @@ export default function HomePage() {
                   {/* Card Header - Image (no padding) */}
                   {collection.cover_image && (
                     <div className="w-full h-48 overflow-hidden">
-                      <img
+                      <OptimizedImage
                         src={collection.cover_image}
                         alt={collection.title}
+                        preset="medium"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

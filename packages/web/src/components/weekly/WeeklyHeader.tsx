@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Collection } from '@/services/collectionService';
 import { ArrowLeftIcon, CalendarIcon, ReaderIcon } from '@radix-ui/react-icons';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
+import { OptimizedImage } from '@/components/OptimizedImage';
 
 type WeeklyHeaderProps = {
   collection: Collection;
@@ -12,10 +13,12 @@ export default function WeeklyHeader({ collection }: WeeklyHeaderProps) {
     <div className="bg-white border-b">
       {/* Cover Image */}
       {collection.cover_image && (
-        <div className="w-full h-48 md:h-56 overflow-hidden">
-          <img
+        <div className="w-full h-56 md:h-64 lg:h-72 overflow-hidden">
+          <OptimizedImage
             src={collection.cover_image}
             alt={collection.title}
+            preset="mobile-cover"
+            responsive
             className="w-full h-full object-cover"
           />
         </div>

@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Collection } from '@/services/collectionService';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
+import { OptimizedImage } from '@/components/OptimizedImage';
 
 type Section = NonNullable<Collection['sections']>[0];
 
@@ -18,10 +19,11 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
     <article className="border-b border-gray-200 last:border-b-0">
       {/* Article Header - Image (no padding) */}
       {section.image && (
-        <div className="w-full h-48 md:h-40 overflow-hidden rounded-t-lg">
-          <img
+        <div className="w-full h-56 md:h-48 lg:h-56 overflow-hidden rounded-t-lg">
+          <OptimizedImage
             src={section.image}
             alt={section.title || section.article?.title || ''}
+            preset="medium"
             className="w-full h-full object-cover"
           />
         </div>

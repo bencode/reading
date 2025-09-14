@@ -10,6 +10,7 @@ import { Collection } from '@/services/collectionService';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeftIcon, Pencil1Icon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
+import { OptimizedImage } from '@/components/OptimizedImage';
 
 export default function CollectionDetailPage() {
   const { isAuthenticated } = useAuth();
@@ -120,10 +121,11 @@ export default function CollectionDetailPage() {
         {/* Cover Image */}
         {collection.cover_image && (
           <div className="mb-8">
-            <div className="w-full h-64 rounded-lg overflow-hidden">
-              <img
+            <div className="w-full h-56 md:h-64 rounded-lg overflow-hidden">
+              <OptimizedImage
                 src={collection.cover_image}
                 alt={collection.title}
+                preset="large"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -146,9 +148,10 @@ export default function CollectionDetailPage() {
                       {section.image && (
                         <div className="flex-shrink-0">
                           <div className="w-32 h-24 rounded-lg overflow-hidden">
-                            <img
+                            <OptimizedImage
                               src={section.image}
                               alt={section.title || section.article?.title || ''}
+                              preset="thumbnail"
                               className="w-full h-full object-cover"
                             />
                           </div>
