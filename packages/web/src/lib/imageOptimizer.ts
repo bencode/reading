@@ -6,18 +6,18 @@ type ImageSize = {
 }
 
 export type ImageSizePreset = 
-  | 'mobile-cover'    // 375x200 for mobile cover images
-  | 'desktop-cover'   // 900x160 for desktop cover images  
-  | 'thumbnail'       // 150x150 for thumbnails
-  | 'medium'          // 400x400 for medium size
-  | 'large'           // 800x800 for large size
+  | 'mobile-cover'    // 750x422 for mobile cover images (16:9)
+  | 'desktop-cover'   // 1000x562 for desktop cover images (16:9)
+  | 'thumbnail'       // 300x300 for thumbnails (2x)
+  | 'medium'          // 800x800 for medium size
+  | 'large'           // 1000x1000 for large size
 
 const IMAGE_PRESETS: Record<ImageSizePreset, ImageSize> = {
-  'mobile-cover': { width: 375, height: 200, quality: 80, format: 'webp' },
-  'desktop-cover': { width: 900, height: 160, quality: 80, format: 'webp' },
-  'thumbnail': { width: 150, height: 150, quality: 75, format: 'webp' },
-  'medium': { width: 400, height: 400, quality: 85, format: 'webp' },
-  'large': { width: 800, height: 800, quality: 90, format: 'webp' }
+  'mobile-cover': { width: 750, height: 422, quality: 80, format: 'webp' },
+  'desktop-cover': { width: 1000, height: 562, quality: 80, format: 'webp' },
+  'thumbnail': { width: 300, height: 300, quality: 75, format: 'webp' },
+  'medium': { width: 800, height: 800, quality: 85, format: 'webp' },
+  'large': { width: 1000, height: 1000, quality: 90, format: 'webp' }
 }
 
 function buildProcessParams(config: ImageSize): string {
