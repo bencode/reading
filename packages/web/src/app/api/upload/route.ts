@@ -3,6 +3,17 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
+function getUploadDir(): string {
+  // Use environment variable or fallback to public/uploads for development
+  const uploadDir = process.env.UPLOAD_DIR;
+  if (uploadDir) {
+    return uploadDir;
+  }
+  
+  // Fallback for development environment
+  return join(process.cwd(), 'public', 'uploads');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -26,7 +37,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // Create uploads directory if it doesn't exist
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
+    const uploadDir = getUploadDir();
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
     }

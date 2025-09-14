@@ -10,6 +10,7 @@ services:
       - .env
     volumes:
       - ./data:/app/data
+      - ./data/uploads:/app/packages/web/.next/static/uploads
     depends_on:
       - db_init
     restart: unless-stopped
