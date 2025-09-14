@@ -32,9 +32,10 @@ def migrate_issue_sections_data(conn):
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='issue_sections'")
     if cursor.fetchone():
         # Migrate data from issue_sections to collection_sections
+        # Note: issue_sections.issue_id maps to collection_sections.collection_id
         cursor.execute("""
             INSERT OR IGNORE INTO collection_sections (id, collection_id, article_id, title, description, image, external_url, order_index, created_at)
-            SELECT id, collection_id, article_id, title, description, image, external_url, order_index, created_at 
+            SELECT id, issue_id, article_id, title, description, image, external_url, order_index, created_at 
             FROM issue_sections
         """)
 
