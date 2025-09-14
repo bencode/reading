@@ -7,12 +7,17 @@ services:
     environment:
       - IMGPROXY_BIND=0.0.0.0:8080
       - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/uploads
+      # ——格式&质量策略（按需微调）——
       - IMGPROXY_ENABLE_WEBP_DETECTION=true
       - IMGPROXY_ENFORCE_WEBP=false
       - IMGPROXY_QUALITY=85
       - IMGPROXY_MAX_ANIMATION_FRAMES=1
       - IMGPROXY_STRIP_METADATA=true
       - IMGPROXY_LOG_LEVEL=warn
+      # ——健壮性（可选，按需调整）——
+      # - IMGPROXY_READ_TIMEOUT=5s
+      # - IMGPROXY_KEEP_ALIVE_TIMEOUT=60s
+      # - IMGPROXY_CONCURRENCY=4
     volumes:
       - ./data/uploads:/uploads:ro
     restart: unless-stopped
