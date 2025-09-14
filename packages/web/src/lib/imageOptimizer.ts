@@ -5,7 +5,7 @@ type ImageSize = {
   format?: 'webp' | 'jpeg' | 'png';
 }
 
-type ImageSizePreset = 
+export type ImageSizePreset = 
   | 'mobile-cover'    // 375x200 for mobile cover images
   | 'desktop-cover'   // 900x160 for desktop cover images  
   | 'thumbnail'       // 150x150 for thumbnails
