@@ -144,7 +144,7 @@ export default function CollectionsPage() {
                           <OptimizedImage
                             src={collection.cover_image}
                             alt={collection.title}
-                            preset="thumbnail"
+                            size="small"
                             className="w-full h-full object-cover"
                           />
                         </div>

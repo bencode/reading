@@ -17,8 +17,7 @@ export default function WeeklyHeader({ collection }: WeeklyHeaderProps) {
           <OptimizedImage
             src={collection.cover_image}
             alt={collection.title}
-            preset="mobile-cover"
-            responsive
+            size="full"
             className="w-full h-full object-cover"
           />
         </div>

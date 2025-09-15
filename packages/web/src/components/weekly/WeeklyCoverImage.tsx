@@ -13,8 +13,7 @@ export default function WeeklyCoverImage({ imageUrl, title }: WeeklyCoverImagePr
           <OptimizedImage
             src={imageUrl}
             alt={title}
-            preset="mobile-cover"
-            responsive
+            size="full"
             className="w-full h-full object-cover"
           />
         </div>

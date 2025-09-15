@@ -91,7 +91,7 @@ export default function HomePage() {
                       <OptimizedImage
                         src={collection.cover_image}
                         alt={collection.title}
-                        preset="medium"
+                        size="full"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

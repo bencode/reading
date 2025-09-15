@@ -23,7 +23,7 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
           <OptimizedImage
             src={section.image}
             alt={section.title || section.article?.title || ''}
-            preset="medium"
+            size="full"
             className="w-full h-full object-cover"
           />
         </div>

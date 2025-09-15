@@ -125,7 +125,7 @@ export default function CollectionDetailPage() {
               <OptimizedImage
                 src={collection.cover_image}
                 alt={collection.title}
-                preset="large"
+                size="full"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -151,7 +151,7 @@ export default function CollectionDetailPage() {
                             <OptimizedImage
                               src={section.image}
                               alt={section.title || section.article?.title || ''}
-                              preset="thumbnail"
+                              size="small"
                               className="w-full h-full object-cover"
                             />
                           </div>

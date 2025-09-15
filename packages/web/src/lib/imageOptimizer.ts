@@ -1,67 +1,101 @@
 type ImageSize = {
   width: number;
-  height: number;
   quality?: number;
   format?: 'webp' | 'jpeg' | 'png';
 }
 
-export type ImageSizePreset = 
-  | 'mobile-cover'    // 750x422 for mobile cover images (16:9)
-  | 'desktop-cover'   // 1000x562 for desktop cover images (16:9)
-  | 'thumbnail'       // 300x300 for thumbnails (2x)
-  | 'medium'          // 800x800 for medium size
-  | 'large'           // 1000x1000 for large size
+export type ResponsiveImageSize = 'small' | 'full';
 
-const IMAGE_PRESETS: Record<ImageSizePreset, ImageSize> = {
-  'mobile-cover': { width: 750, height: 422, quality: 80, format: 'webp' },
-  'desktop-cover': { width: 1000, height: 562, quality: 80, format: 'webp' },
-  'thumbnail': { width: 300, height: 300, quality: 75, format: 'webp' },
-  'medium': { width: 800, height: 800, quality: 85, format: 'webp' },
-  'large': { width: 1000, height: 1000, quality: 90, format: 'webp' }
+type ResponsiveImageConfig = {
+  mobile: { width: number; quality?: number };
+  desktop: { width: number; quality?: number };
 }
 
-function buildProcessParams(config: ImageSize): string {
+// WebP 支持检测
+function supportsWebP(): boolean {
+  if (typeof window === 'undefined') return true; // SSR 默认支持
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 1;
+  return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+}
+
+// 响应式图片尺寸配置
+const RESPONSIVE_SIZES: Record<ResponsiveImageSize, ResponsiveImageConfig> = {
+  small: {
+    mobile: { width: 300, quality: 75 },
+    desktop: { width: 400, quality: 80 }
+  },
+  full: {
+    mobile: { width: 750, quality: 80 },
+    desktop: { width: 1200, quality: 85 }
+  }
+};
+
+function buildProcessParams(config: ImageSize, aspectRatio?: number): string {
   const parts: string[] = []
-  
+  const format = config.format || (supportsWebP() ? 'webp' : 'jpeg')
+
   // 构建 imgproxy 处理参数路径
-  // 格式: resize:fill:width:height:enlarge/gravity:ce/quality:n/format:webp
-  parts.push(`resize:fill:${config.width}:${config.height}:0`)
+  if (aspectRatio) {
+    // 如果指定了长宽比，先设置crop_aspect_ratio，再resize
+    parts.push(`crop_aspect_ratio:${aspectRatio}:true`)
+  }
+
+  // 使用 resize:fit 保持原图比例，高度设为0让其自动计算
+  parts.push(`resize:fit:${config.width}:0`)
   parts.push('gravity:ce') // center gravity
-  
+
   if (config.quality) {
     parts.push(`quality:${config.quality}`)
   }
-  
-  if (config.format) {
-    parts.push(`format:${config.format}`)
-  }
-  
+
+  parts.push(`format:${format}`)
+
   return parts.join('/')
 }
 
-export function getOptimizedImageUrl(
-  originalUrl: string, 
-  preset: ImageSizePreset,
-  options?: Partial<ImageSize>
-): string {
-  if (!originalUrl || !originalUrl.startsWith('/uploads/')) {
-    return originalUrl
-  }
-
-  const presetConfig = IMAGE_PRESETS[preset]
-  const config = { ...presetConfig, ...options }
-  
-  // 构建查询参数
-  const processParams = buildProcessParams(config)
-  const separator = originalUrl.includes('?') ? '&' : '?'
-  
-  return `${originalUrl}${separator}process=${encodeURIComponent(processParams)}`
+// 检测当前是否为移动设备
+function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false; // SSR 默认桌面端
+  return window.innerWidth < 768;
 }
 
-export function getResponsiveImageUrls(originalUrl: string) {
+// 响应式图片工具方法
+export function getResponsiveImageConfig(
+  originalUrl: string,
+  size: ResponsiveImageSize,
+  aspectRatio?: number
+): {
+  mobileUrl: string;
+  desktopUrl: string;
+  currentUrl: string;
+} {
+  if (!originalUrl || !originalUrl.startsWith('/uploads/')) {
+    return {
+      mobileUrl: originalUrl,
+      desktopUrl: originalUrl,
+      currentUrl: originalUrl
+    }
+  }
+
+  const sizeConfig = RESPONSIVE_SIZES[size]
+  const separator = originalUrl.includes('?') ? '&' : '?'
+  const format: 'webp' | 'jpeg' = supportsWebP() ? 'webp' : 'jpeg'
+
+  const mobileConfig: ImageSize = { ...sizeConfig.mobile, format }
+  const desktopConfig: ImageSize = { ...sizeConfig.desktop, format }
+
+  const mobileParams = buildProcessParams(mobileConfig, aspectRatio)
+  const desktopParams = buildProcessParams(desktopConfig, aspectRatio)
+
+  const mobileUrl = `${originalUrl}${separator}process=${encodeURIComponent(mobileParams)}`
+  const desktopUrl = `${originalUrl}${separator}process=${encodeURIComponent(desktopParams)}`
+
   return {
-    mobile: getOptimizedImageUrl(originalUrl, 'mobile-cover'),
-    desktop: getOptimizedImageUrl(originalUrl, 'desktop-cover'),
-    thumbnail: getOptimizedImageUrl(originalUrl, 'thumbnail')
+    mobileUrl,
+    desktopUrl,
+    currentUrl: isMobileDevice() ? mobileUrl : desktopUrl
   }
 }
