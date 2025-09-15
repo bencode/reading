@@ -90,8 +90,8 @@ export function getResponsiveImageConfig(
   const mobileParams = buildProcessParams(mobileConfig, aspectRatio)
   const desktopParams = buildProcessParams(desktopConfig, aspectRatio)
 
-  const mobileUrl = `${originalUrl}${separator}process=${encodeURIComponent(mobileParams)}`
-  const desktopUrl = `${originalUrl}${separator}process=${encodeURIComponent(desktopParams)}`
+  const mobileUrl = `${originalUrl}${separator}process=${mobileParams}`
+  const desktopUrl = `${originalUrl}${separator}process=${desktopParams}`
 
   return {
     mobileUrl,
