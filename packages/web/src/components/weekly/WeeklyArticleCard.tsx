@@ -16,7 +16,7 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
   const displayContent = section.description || section.article?.summary;
   
   return (
-    <article className="border-b border-gray-200 last:border-b-0">
+    <article>
       {/* Article Header - Image (no padding) */}
       {section.image && (
         <div className="w-full h-56 md:h-48 lg:h-56 overflow-hidden rounded-t-lg">
