@@ -17,17 +17,14 @@ export function OptimizedImage({
 }: OptimizedImageProps) {
   if (!src) return null;
 
-  const { mobileUrl, desktopUrl } = getResponsiveImageConfig(src, size, ratio);
+  const optimizedUrl = getResponsiveImageConfig(src, size, ratio);
 
   return (
-    <picture>
-      <source media="(min-width: 768px)" srcSet={desktopUrl} />
-      <img
-        src={mobileUrl}
-        alt={alt}
-        className={className}
-        loading="lazy"
-      />
-    </picture>
+    <img
+      src={optimizedUrl}
+      alt={alt}
+      className={className}
+      loading="lazy"
+    />
   );
 }

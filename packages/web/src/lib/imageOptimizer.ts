@@ -67,35 +67,19 @@ export function getResponsiveImageConfig(
   originalUrl: string,
   size: ResponsiveImageSize,
   aspectRatio?: number
-): {
-  mobileUrl: string;
-  desktopUrl: string;
-  currentUrl: string;
-} {
+): string {
   if (!originalUrl || !originalUrl.startsWith('/uploads/')) {
-    return {
-      mobileUrl: originalUrl,
-      desktopUrl: originalUrl,
-      currentUrl: originalUrl
-    }
+    return originalUrl;
   }
 
   const sizeConfig = RESPONSIVE_SIZES[size]
+  const isMobile = isMobileDevice()
+  const config = isMobile ? sizeConfig.mobile : sizeConfig.desktop
   const separator = originalUrl.includes('?') ? '&' : '?'
   const format: 'webp' | 'jpeg' = supportsWebP() ? 'webp' : 'jpeg'
 
-  const mobileConfig: ImageSize = { ...sizeConfig.mobile, format }
-  const desktopConfig: ImageSize = { ...sizeConfig.desktop, format }
+  const imageConfig: ImageSize = { ...config, format }
+  const params = buildProcessParams(imageConfig, aspectRatio)
 
-  const mobileParams = buildProcessParams(mobileConfig, aspectRatio)
-  const desktopParams = buildProcessParams(desktopConfig, aspectRatio)
-
-  const mobileUrl = `${originalUrl}${separator}process=${mobileParams}`
-  const desktopUrl = `${originalUrl}${separator}process=${desktopParams}`
-
-  return {
-    mobileUrl,
-    desktopUrl,
-    currentUrl: isMobileDevice() ? mobileUrl : desktopUrl
-  }
+  return `${originalUrl}${separator}process=${params}`
 }
