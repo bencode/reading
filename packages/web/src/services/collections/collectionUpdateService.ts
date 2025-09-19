@@ -69,7 +69,7 @@ export async function updateCollectionSections(
  * Categorizes sections into create, update, and delete operations
  */
 function categorizeSectionOperations(
-  currentSections: any[],
+  currentSections: Array<{ id: number }>,
   newSections: SectionUpdateData[]
 ) {
   const currentSectionIds = new Set(currentSections.map(s => s.id));
@@ -124,7 +124,7 @@ function areTagArraysEqual(arr1: string[], arr2: string[]): boolean {
  * Checks if section data has changed (excluding tags)
  */
 export function hasSectionDataChanged(
-  current: any,
+  current: Record<string, unknown>,
   updated: SectionUpdateData
 ): boolean {
   const fieldsToCompare = ['article_id', 'title', 'description', 'image', 'external_url', 'order_index'];
