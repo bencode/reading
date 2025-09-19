@@ -1,5 +1,5 @@
 import { getDb } from '../lib/db';
-import { Article } from './articleService';
+import { Article, Tag } from './articleService';
 
 export type CollectionStatus = 'draft' | 'published' | 'archived';
 export type CollectionFormStatus = 'draft' | 'published';
@@ -34,6 +34,8 @@ export type CollectionSection = {
   external_url: string | null;
   order_index: number;
   created_at: string;
+  tags: Tag[];
+  tag_names?: string[]; // For form updates
   article?: Pick<Article, 'id' | 'title' | 'summary' | 'original_url' | 'source_name' | 'published_at'>;
 }
 
@@ -51,6 +53,7 @@ export type CreateCollectionSectionData = {
   image?: string;
   external_url?: string;
   order_index?: number;
+  tag_names?: string[];
 }
 
 export type UpdateCollectionData = {
@@ -66,6 +69,7 @@ export type UpdateCollectionSectionData = {
   image?: string;
   external_url?: string;
   order_index?: number;
+  tag_names?: string[];
 }
 
 // Collections CRUD operations
@@ -110,25 +114,37 @@ export async function getCollection(id: number): Promise<Collection | null> {
     .where('s.collection_id', id)
     .orderBy('s.order_index', 'asc');
     
-  const sectionsWithArticles = sections.map(section => ({
-    id: section.id,
-    collection_id: section.collection_id,
-    article_id: section.article_id,
-    title: section.title,
-    description: section.description,
-    image: section.image,
-    external_url: section.external_url,
-    order_index: section.order_index,
-    created_at: section.created_at,
-    article: section.article_title ? {
-      id: section.article_id,
-      title: section.article_title,
-      summary: section.article_summary,
-      original_url: section.article_url,
-      source_name: section.article_source,
-      published_at: section.article_published_at
-    } : undefined
-  }));
+  // Fetch tags for each section
+  const sectionsWithArticles = await Promise.all(
+    sections.map(async (section) => {
+      const tags = await db('tags as t')
+        .select('t.id', 't.name')
+        .join('collection_section_tags as cst', 't.id', 'cst.tag_id')
+        .where('cst.collection_section_id', section.id);
+
+      return {
+        id: section.id,
+        collection_id: section.collection_id,
+        article_id: section.article_id,
+        title: section.title,
+        description: section.description,
+        image: section.image,
+        external_url: section.external_url,
+        order_index: section.order_index,
+        created_at: section.created_at,
+        tags,
+        tag_names: tags.map(tag => tag.name), // Initialize tag_names for form editing
+        article: section.article_title ? {
+          id: section.article_id,
+          title: section.article_title,
+          summary: section.article_summary,
+          original_url: section.article_url,
+          source_name: section.article_source,
+          published_at: section.article_published_at
+        } : undefined
+      };
+    })
+  );
   
   return {
     ...collection,
@@ -204,41 +220,92 @@ export async function updateCollection(id: number, updates: UpdateCollectionData
 
 export async function deleteCollection(id: number): Promise<void> {
   const db = getDb();
-  
+
   await db.transaction(async (trx) => {
+    // Get all section IDs for this collection
+    const sections = await trx('collection_sections')
+      .select('id')
+      .where('collection_id', id);
+
+    // Delete section tags for all sections in this collection
+    for (const section of sections) {
+      await trx('collection_section_tags')
+        .where('collection_section_id', section.id)
+        .del();
+    }
+
+    // Delete sections
     await trx('collection_sections').where('collection_id', id).del();
+    // Delete collection
     await trx('collections').where('id', id).del();
   });
 }
 
 // Collection Sections CRUD operations
 export async function createCollectionSection(
-  collectionId: number, 
+  collectionId: number,
   data: CreateCollectionSectionData
 ): Promise<CollectionSection> {
   const db = getDb();
-  
-  let orderIndex = data.order_index;
-  if (orderIndex === undefined) {
-    const lastSection = await db('collection_sections')
-      .where('collection_id', collectionId)
-      .orderBy('order_index', 'desc')
-      .first();
-    orderIndex = lastSection ? lastSection.order_index + 1 : 0;
-  }
-  
-  const [sectionId] = await db('collection_sections').insert({
-    collection_id: collectionId,
-    article_id: data.article_id,
-    title: data.title || null,
-    description: data.description || null,
-    image: data.image || null,
-    external_url: data.external_url || null,
-    order_index: orderIndex
+
+  return await db.transaction(async (trx) => {
+    let orderIndex = data.order_index;
+    if (orderIndex === undefined) {
+      const lastSection = await trx('collection_sections')
+        .where('collection_id', collectionId)
+        .orderBy('order_index', 'desc')
+        .first();
+      orderIndex = lastSection ? lastSection.order_index + 1 : 0;
+    }
+
+    const [sectionId] = await trx('collection_sections').insert({
+      collection_id: collectionId,
+      article_id: data.article_id,
+      title: data.title || null,
+      description: data.description || null,
+      image: data.image || null,
+      external_url: data.external_url || null,
+      order_index: orderIndex
+    });
+
+    // Handle tags - if provided, use them; otherwise copy from article
+    let tagNames = data.tag_names;
+    if (!tagNames) {
+      // Get article's tags to copy as defaults
+      const articleTags = await trx('tags as t')
+        .select('t.name')
+        .join('article_tags as at', 't.id', 'at.tag_id')
+        .where('at.article_id', data.article_id);
+      tagNames = articleTags.map(tag => tag.name);
+    }
+
+    // Add tags to section
+    for (const tagName of tagNames) {
+      let tagId: number;
+
+      const existingTag = await trx('tags')
+        .select('id')
+        .where('name', tagName)
+        .first();
+
+      if (existingTag) {
+        tagId = existingTag.id;
+      } else {
+        const [newTagId] = await trx('tags').insert({
+          name: tagName
+        });
+        tagId = newTagId;
+      }
+
+      await trx('collection_section_tags').insert({
+        collection_section_id: sectionId,
+        tag_id: tagId
+      });
+    }
+
+    const result = await getCollectionSection(sectionId);
+    return result!;
   });
-  
-  const result = await getCollectionSection(sectionId);
-  return result!;
 }
 
 export async function getCollectionSection(id: number): Promise<CollectionSection | null> {
@@ -258,7 +325,13 @@ export async function getCollectionSection(id: number): Promise<CollectionSectio
     .first();
     
   if (!section) return null;
-  
+
+  // Get tags for this section
+  const tags = await db('tags as t')
+    .select('t.id', 't.name')
+    .join('collection_section_tags as cst', 't.id', 'cst.tag_id')
+    .where('cst.collection_section_id', id);
+
   return {
     id: section.id,
     collection_id: section.collection_id,
@@ -269,6 +342,8 @@ export async function getCollectionSection(id: number): Promise<CollectionSectio
     external_url: section.external_url,
     order_index: section.order_index,
     created_at: section.created_at,
+    tags,
+    tag_names: tags.map(tag => tag.name), // Initialize tag_names for form editing
     article: section.article_title ? {
       id: section.article_id,
       title: section.article_title,
@@ -281,24 +356,69 @@ export async function getCollectionSection(id: number): Promise<CollectionSectio
 }
 
 export async function updateCollectionSection(
-  id: number, 
+  id: number,
   updates: UpdateCollectionSectionData
 ): Promise<CollectionSection | null> {
   const db = getDb();
-  
-  const updated = await db('collection_sections')
-    .where('id', id)
-    .update({
-      ...updates,
-      updated_at: db.fn.now()
-    });
-    
-  if (updated === 0) return null;
-  
-  return await getCollectionSection(id);
+
+  return await db.transaction(async (trx) => {
+    const { tag_names, ...sectionUpdates } = updates;
+
+    // Update section fields
+    if (Object.keys(sectionUpdates).length > 0) {
+      const updated = await trx('collection_sections')
+        .where('id', id)
+        .update({
+          ...sectionUpdates,
+          updated_at: db.fn.now()
+        });
+
+      if (updated === 0) return null;
+    }
+
+    // Update tags if provided
+    if (tag_names !== undefined) {
+      // Remove existing tags
+      await trx('collection_section_tags')
+        .where('collection_section_id', id)
+        .del();
+
+      // Add new tags
+      for (const tagName of tag_names) {
+        let tagId: number;
+
+        const existingTag = await trx('tags')
+          .select('id')
+          .where('name', tagName)
+          .first();
+
+        if (existingTag) {
+          tagId = existingTag.id;
+        } else {
+          const [newTagId] = await trx('tags').insert({
+            name: tagName
+          });
+          tagId = newTagId;
+        }
+
+        await trx('collection_section_tags').insert({
+          collection_section_id: id,
+          tag_id: tagId
+        });
+      }
+    }
+
+    return await getCollectionSection(id);
+  });
 }
 
 export async function deleteCollectionSection(id: number): Promise<void> {
   const db = getDb();
-  await db('collection_sections').where('id', id).del();
+
+  await db.transaction(async (trx) => {
+    // Delete section tags
+    await trx('collection_section_tags').where('collection_section_id', id).del();
+    // Delete section
+    await trx('collection_sections').where('id', id).del();
+  });
 }

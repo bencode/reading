@@ -10,14 +10,18 @@ type ArticleSectionsListProps = {
   sections: CollectionSection[]
   onAddSection: (article: Article) => void
   onRemoveSection: (index: number) => void
-  onUpdateSection: (index: number, field: keyof CollectionSection, value: string) => void
+  onUpdateSection: (
+    index: number,
+    field: keyof CollectionSection,
+    value: unknown,
+  ) => void
 }
 
 export function ArticleSectionsList({
   sections,
   onAddSection,
   onRemoveSection,
-  onUpdateSection
+  onUpdateSection,
 }: ArticleSectionsListProps) {
   return (
     <Card>
@@ -30,7 +34,8 @@ export function ArticleSectionsList({
       <CardContent>
         {sections.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            No articles added yet. Click &ldquo;Add Article&rdquo; to get started.
+            No articles added yet. Click &ldquo;Add Article&rdquo; to get
+            started.
           </div>
         ) : (
           <div className="space-y-6">

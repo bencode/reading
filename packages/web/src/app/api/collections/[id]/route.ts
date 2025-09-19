@@ -60,6 +60,7 @@ export async function PUT(
         description: sectionData.description,
         image: sectionData.image,
         external_url: sectionData.external_url,
+        tag_names: sectionData.tag_names,
         order_index: i
       });
     }
