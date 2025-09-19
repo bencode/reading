@@ -1,7 +1,7 @@
 'use client'
 
 import { Article } from '@/services/articleService'
-import type { CollectionSection } from '@/services/collectionService'
+import type { CollectionSection } from '@/services/collections'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ArticleSelector from '@/components/ArticleSelector'
 import { ArticleSection } from './ArticleSection'

@@ -26,3 +26,11 @@ export {
   deleteCollectionSectionTags,
   getOrCreateTag
 } from './collectionTagService';
+
+// Export intelligent update operations
+export {
+  updateCollectionSections,
+  updateSectionTagsIfChanged,
+  hasSectionDataChanged
+} from './collectionUpdateService';
+export type { SectionUpdateData } from './collectionUpdateService';

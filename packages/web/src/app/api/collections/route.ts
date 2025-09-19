@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCollections, createCollection, createCollectionSection, getCollection } from '@/services/collectionService';
+import {
+  getCollections,
+  createCollection,
+  getCollection,
+  createCollectionSection
+} from '@/services/collections';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

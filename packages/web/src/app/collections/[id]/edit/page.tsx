@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Collection } from '@/services/collectionService';
+import { Collection } from '@/services/collections';
 import { CollectionForm } from '@/components/CollectionForm';
 
 export default function EditCollectionPage() {

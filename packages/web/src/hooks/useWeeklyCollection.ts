@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
-import type { Collection } from '@/services/collectionService';
+import type { Collection } from '@/services/collections';
 
 export function useWeeklyCollection(collectionId: string) {
   const [collection, setCollection] = useState<Collection | null>(null);

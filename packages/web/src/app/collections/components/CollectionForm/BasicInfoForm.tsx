@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { CollectionFormStatus } from '@/services/collectionService'
+import type { CollectionFormStatus } from '@/services/collections'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { TextAssistant } from '@/components/TextAssistant'
 import { ImagePicker } from '@/components/ImagePicker'

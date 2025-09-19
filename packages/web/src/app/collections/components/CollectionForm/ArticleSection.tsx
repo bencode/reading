@@ -1,8 +1,8 @@
 'use client'
 
-import { TrashIcon } from '@radix-ui/react-icons'
+import { TrashIcon, ExternalLinkIcon } from '@radix-ui/react-icons'
 
-import type { CollectionSection } from '@/services/collectionService'
+import type { CollectionSection } from '@/services/collections'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -39,7 +39,7 @@ export function ArticleSection({
             <h3 className="font-medium text-gray-900 mb-1">
               {section.article?.title || 'Unknown Article'}
             </h3>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
               <Badge variant="outline" className="text-xs">
                 {section.article?.source_name}
               </Badge>
@@ -48,6 +48,11 @@ export function ArticleSection({
                   new Date(section.article.published_at).toLocaleDateString()}
               </span>
             </div>
+            {section.article?.original_url && (
+              <div className="text-xs text-gray-500 font-mono truncate max-w-xs">
+                {section.article.original_url}
+              </div>
+            )}
           </div>
           <Button
             type="button"
@@ -102,9 +107,22 @@ export function ArticleSection({
             </div>
 
             <div>
-              <Label htmlFor={`section-external-${index}`}>
-                External Link URL
-              </Label>
+              <div className="flex justify-between items-center mb-2">
+                <Label htmlFor={`section-external-${index}`}>
+                  External Link URL
+                </Label>
+                {section.article?.original_url && (
+                  <a
+                    href={section.article.original_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    <ExternalLinkIcon className="w-3 h-3" />
+                    View Original Article
+                  </a>
+                )}
+              </div>
               <Input
                 id={`section-external-${index}`}
                 value={section.external_url || ''}
@@ -114,8 +132,7 @@ export function ArticleSection({
                 placeholder="https://example.com/additional-resource"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Optional: Add a link to additional resources or references for
-                this section
+                Optional: Add a link to additional resources or references for this section
               </p>
             </div>
           </div>

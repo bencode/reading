@@ -8,7 +8,7 @@ import type {
   CollectionSection,
   Collection,
   CollectionFormStatus,
-} from '@/services/collectionService'
+} from '@/services/collections'
 import { BasicInfoForm, type CollectionFormData } from './BasicInfoForm'
 import { ArticleSectionsList } from './ArticleSectionsList'
 import { FormActions } from './FormActions'

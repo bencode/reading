@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Collection } from '@/services/collectionService';
+import { Collection } from '@/services/collections';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeftIcon, Pencil1Icon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';

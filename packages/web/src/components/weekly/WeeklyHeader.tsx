@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Collection } from '@/services/collectionService';
+import { Collection } from '@/services/collections';
 import { ArrowLeftIcon, CalendarIcon, ReaderIcon } from '@radix-ui/react-icons';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { OptimizedImage } from '@/components/OptimizedImage';

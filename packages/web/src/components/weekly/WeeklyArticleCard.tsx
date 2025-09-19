@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { Collection } from '@/services/collectionService';
+import type { Collection } from '@/services/collections';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { OptimizedImage } from '@/components/OptimizedImage';
