@@ -8,9 +8,6 @@ export default function WeeklyFooter() {
           <Link href="/" className="hover:text-gray-900">
             More Collections
           </Link>
-          <Link href="/articles" className="hover:text-gray-900">
-            All Articles
-          </Link>
         </div>
       </div>
     </footer>
