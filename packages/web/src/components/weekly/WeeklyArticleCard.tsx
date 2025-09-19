@@ -16,7 +16,7 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
   const displayContent = section.description || section.article?.summary;
   
   return (
-    <article>
+    <article className="group">
       {/* Article Header - Image (no padding) */}
       {section.image && (
         <div className="w-full h-56 md:h-48 lg:h-56 overflow-hidden">
@@ -24,7 +24,7 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
             src={section.image}
             alt={section.title || section.article?.title || ''}
             size="full"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
           />
         </div>
       )}
@@ -67,6 +67,7 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
               href={section.external_url || section.article?.original_url}
               target="_blank"
               rel="noopener noreferrer"
+              className="cursor-pointer"
             >
               <Button size="sm">
                 Read Original

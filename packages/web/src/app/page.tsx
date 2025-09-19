@@ -41,22 +41,13 @@ export default function HomePage() {
               <p className="text-sm text-gray-600">Curated article collections</p>
             </div>
             
-            <div className="flex gap-3">
-              <Link href="/articles">
-                <Button>
-                  Browse Articles
-                  <ArrowRightIcon className="w-4 h-4 ml-2" />
+            {isAuthenticated && (
+              <Link href="/collections">
+                <Button variant="outline">
+                  Manage Collections
                 </Button>
               </Link>
-              
-              {isAuthenticated && (
-                <Link href="/collections">
-                  <Button variant="outline">
-                    Manage Collections
-                  </Button>
-                </Link>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
