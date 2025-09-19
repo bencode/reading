@@ -49,7 +49,20 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
             </span>
           )}
         </div>
-        
+
+        {/* Tags */}
+        {section.tags && section.tags.length > 0 && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-1">
+              {section.tags.map((tag) => (
+                <Badge key={tag.id} variant="secondary" className="text-xs">
+                  {tag.name}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Description/Content */}
         {displayContent && (
           <div className="mb-6">
