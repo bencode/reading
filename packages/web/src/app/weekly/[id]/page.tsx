@@ -40,7 +40,7 @@ export default function WeeklyCollectionPage() {
 
       <div className="container mx-auto py-4 max-w-4xl">
         {collection.sections && collection.sections.length > 0 ? (
-          <div className="space-y-8">
+          <div className="space-y-4">
             {collection.sections.map((section, index) => (
               <div className="bg-white rounded-lg" key={section.id}>
                 <WeeklyArticleCard section={section} index={index} />

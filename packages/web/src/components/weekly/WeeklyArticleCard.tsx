@@ -19,7 +19,7 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
     <article>
       {/* Article Header - Image (no padding) */}
       {section.image && (
-        <div className="w-full h-56 md:h-48 lg:h-56 overflow-hidden rounded-t-lg">
+        <div className="w-full h-56 md:h-48 lg:h-56 overflow-hidden">
           <OptimizedImage
             src={section.image}
             alt={section.title || section.article?.title || ''}
@@ -30,7 +30,7 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
       )}
       
       {/* Article Body - Text content (with padding) */}
-      <div className="px-4 py-6">
+      <div className="px-4 py-4">
         {/* Article Title */}
         <h2 className="text-lg font-semibold text-gray-900 mb-3">
           {section.title || section.article?.title || 'Untitled'}
