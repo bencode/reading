@@ -4,7 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { Article } from '@/services/articleService'
-import type { CollectionSection, Collection, CollectionFormStatus } from '@/services/collectionService'
+import type {
+  CollectionSection,
+  Collection,
+  CollectionFormStatus,
+} from '@/services/collections'
 import { BasicInfoForm, type CollectionFormData } from './BasicInfoForm'
 import { ArticleSectionsList } from './ArticleSectionsList'
 import { FormActions } from './FormActions'
@@ -26,7 +30,9 @@ export function CollectionForm({ initialData, mode }: CollectionFormProps) {
     title: initialData?.title || '',
     description: initialData?.description || '',
     cover_image: initialData?.cover_image || '',
-    status: (initialData?.status === 'archived' ? 'draft' : initialData?.status) || 'draft',
+    status:
+      (initialData?.status === 'archived' ? 'draft' : initialData?.status) ||
+      'draft',
     sections: initialData?.sections || [],
   })
 
@@ -41,6 +47,8 @@ export function CollectionForm({ initialData, mode }: CollectionFormProps) {
       external_url: '',
       order_index: formData.sections.length,
       created_at: new Date().toISOString(),
+      tags: article.tags || [],
+      tag_names: article.tags?.map((tag) => tag.name) || [],
       article,
     }
 
@@ -60,7 +68,7 @@ export function CollectionForm({ initialData, mode }: CollectionFormProps) {
   const updateSection = (
     index: number,
     field: keyof CollectionSection,
-    value: string,
+    value: unknown,
   ) => {
     const updatedSections = [...formData.sections]
     updatedSections[index] = {
@@ -74,7 +82,9 @@ export function CollectionForm({ initialData, mode }: CollectionFormProps) {
     }))
   }
 
-  const createRequestBody = (status: CollectionFormStatus = formData.status) => ({
+  const createRequestBody = (
+    status: CollectionFormStatus = formData.status,
+  ) => ({
     title: formData.title,
     description: formData.description,
     cover_image: formData.cover_image,
@@ -85,11 +95,15 @@ export function CollectionForm({ initialData, mode }: CollectionFormProps) {
       description: section.description,
       image: section.image,
       external_url: section.external_url,
+      tag_names: section.tag_names || [],
     })),
   })
 
   const submitForm = async (status: CollectionFormStatus = formData.status) => {
-    const apiUrl = mode === 'edit' ? `/api/collections/${initialData!.id}` : '/api/collections'
+    const apiUrl =
+      mode === 'edit'
+        ? `/api/collections/${initialData!.id}`
+        : '/api/collections'
     const method = mode === 'edit' ? 'PUT' : 'POST'
 
     const response = await fetch(apiUrl, {
@@ -137,7 +151,9 @@ export function CollectionForm({ initialData, mode }: CollectionFormProps) {
     router.back()
   }
 
-  const updateBasicInfo = (updater: (prev: CollectionFormData) => CollectionFormData) => {
+  const updateBasicInfo = (
+    updater: (prev: CollectionFormData) => CollectionFormData,
+  ) => {
     setFormData((prev) => {
       const basicInfo = updater({
         title: prev.title,
@@ -167,19 +183,16 @@ export function CollectionForm({ initialData, mode }: CollectionFormProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          <BasicInfoForm 
-            formData={formData}
-            setFormData={updateBasicInfo}
-          />
+          <BasicInfoForm formData={formData} setFormData={updateBasicInfo} />
 
-          <ArticleSectionsList 
+          <ArticleSectionsList
             sections={formData.sections}
             onAddSection={addSection}
             onRemoveSection={removeSection}
             onUpdateSection={updateSection}
           />
 
-          <FormActions 
+          <FormActions
             mode={mode}
             loading={loading}
             canSubmit={!!formData.title.trim()}

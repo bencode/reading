@@ -1,4 +1,5 @@
 import { getDb } from '../lib/db';
+import type { Tag, PaginatedResponse } from './types';
 
 export interface Article {
   id: number;
@@ -23,18 +24,8 @@ export interface Category {
   priority?: number;
 }
 
-export interface Tag {
-  id: number;
-  name: string;
-}
-
-export type PaginatedResponse<T> = {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+// Re-export shared types for backward compatibility
+export type { Tag, PaginatedResponse } from './types';
 
 export async function getCategories(): Promise<Category[]> {
   const db = getDb();

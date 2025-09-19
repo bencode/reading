@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Collection } from '@/services/collectionService';
+import { Collection } from '@/services/collections';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeftIcon, Pencil1Icon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
@@ -136,10 +136,6 @@ export default function CollectionDetailPage() {
         <div className="space-y-6">
           {collection.sections && collection.sections.length > 0 ? (
             <>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                Articles ({collection.sections.length})
-              </h2>
-              
               {collection.sections.map((section, index) => (
                 <Card key={section.id} className="overflow-hidden">
                   <CardContent className="p-6">
@@ -212,10 +208,22 @@ export default function CollectionDetailPage() {
                           </div>
                         )}
                         
+                        {section.tags && section.tags.length > 0 && (
+                          <div className="mb-3">
+                            <div className="flex flex-wrap gap-1">
+                              {section.tags.map((tag) => (
+                                <Badge key={tag.id} variant="secondary" className="text-xs">
+                                  {tag.name}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         {section.article?.summary && (
                           <div className="bg-gray-50 rounded-lg p-4">
                             <h4 className="font-medium text-gray-900 mb-2">Summary</h4>
-                            <MarkdownRenderer 
+                            <MarkdownRenderer
                               content={section.article.summary}
                               className="text-gray-700 text-sm"
                             />

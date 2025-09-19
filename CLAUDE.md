@@ -86,3 +86,4 @@ Database schema changes are managed through yoyo-migrations in `packages/tasks/m
 - Adding join tables for categories and tags
 - Schema modifications for the articles table
 - Population of default categories
+- 系统用英文

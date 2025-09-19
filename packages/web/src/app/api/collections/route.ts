@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCollections, createCollection, createCollectionSection, getCollection } from '@/services/collectionService';
+import {
+  getCollections,
+  createCollection,
+  getCollection,
+  createCollectionSection
+} from '@/services/collections';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -40,6 +45,7 @@ export async function POST(request: NextRequest) {
         description: sectionData.description,
         image: sectionData.image,
         external_url: sectionData.external_url,
+        tag_names: sectionData.tag_names,
         order_index: i
       });
     }

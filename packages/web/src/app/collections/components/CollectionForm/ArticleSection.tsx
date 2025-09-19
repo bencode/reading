@@ -1,8 +1,8 @@
 'use client'
 
-import { TrashIcon } from '@radix-ui/react-icons'
+import { TrashIcon, ExternalLinkIcon } from '@radix-ui/react-icons'
 
-import type { CollectionSection } from '@/services/collectionService'
+import type { CollectionSection } from '@/services/collections'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,19 +12,24 @@ import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { TextAssistant } from '@/components/TextAssistant'
 import { ImagePicker } from '@/components/ImagePicker'
 import TextOptimizer from '@/components/TextOptimizer'
+import { TagsEditor } from './TagsEditor'
 
 type ArticleSectionProps = {
   section: CollectionSection
   index: number
   onRemove: (index: number) => void
-  onUpdate: (index: number, field: keyof CollectionSection, value: string) => void
+  onUpdate: (
+    index: number,
+    field: keyof CollectionSection,
+    value: unknown,
+  ) => void
 }
 
 export function ArticleSection({
   section,
   index,
   onRemove,
-  onUpdate
+  onUpdate,
 }: ArticleSectionProps) {
   return (
     <Card className="border-l-4 border-l-blue-500">
@@ -34,17 +39,20 @@ export function ArticleSection({
             <h3 className="font-medium text-gray-900 mb-1">
               {section.article?.title || 'Unknown Article'}
             </h3>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
               <Badge variant="outline" className="text-xs">
                 {section.article?.source_name}
               </Badge>
               <span>
                 {section.article?.published_at &&
-                  new Date(
-                    section.article.published_at,
-                  ).toLocaleDateString()}
+                  new Date(section.article.published_at).toLocaleDateString()}
               </span>
             </div>
+            {section.article?.original_url && (
+              <div className="text-xs text-gray-500 font-mono truncate max-w-xs">
+                {section.article.original_url}
+              </div>
+            )}
           </div>
           <Button
             type="button"
@@ -59,15 +67,11 @@ export function ArticleSection({
 
         <div className="grid gap-4">
           <div>
-            <Label htmlFor={`section-title-${index}`}>
-              Custom Title
-            </Label>
+            <Label htmlFor={`section-title-${index}`}>Custom Title</Label>
             <Input
               id={`section-title-${index}`}
               value={section.title || ''}
-              onChange={(e) =>
-                onUpdate(index, 'title', e.target.value)
-              }
+              onChange={(e) => onUpdate(index, 'title', e.target.value)}
               placeholder="Override article title (optional)"
             />
           </div>
@@ -75,18 +79,14 @@ export function ArticleSection({
           <div>
             <MarkdownEditor
               value={section.description || ''}
-              onChange={(value) =>
-                onUpdate(index, 'description', value)
-              }
+              onChange={(value) => onUpdate(index, 'description', value)}
               label="Custom Description"
               placeholder="Add custom description or commentary. Supports **markdown** formatting."
               rows={6}
               extra={
                 <TextAssistant
                   value={section.description || ''}
-                  onChange={(value) =>
-                    onUpdate(index, 'description', value)
-                  }
+                  onChange={(value) => onUpdate(index, 'description', value)}
                   context={`Article: ${section.article?.title || 'article'} from ${section.article?.source_name || 'source'}`}
                   type="description"
                   placeholder="Add custom description or commentary"
@@ -99,9 +99,7 @@ export function ArticleSection({
             <div>
               <ImagePicker
                 value={section.image || ''}
-                onChange={(url) =>
-                  onUpdate(index, 'image', url)
-                }
+                onChange={(url) => onUpdate(index, 'image', url)}
                 label="Section Image"
                 placeholder="Add custom image for this section"
                 context={`Article: ${section.article?.title || 'article'} from ${section.article?.source_name || 'source'}`}
@@ -109,18 +107,27 @@ export function ArticleSection({
             </div>
 
             <div>
-              <Label htmlFor={`section-external-${index}`}>
-                External Link URL
-              </Label>
+              <div className="flex justify-between items-center mb-2">
+                <Label htmlFor={`section-external-${index}`}>
+                  External Link URL
+                </Label>
+                {section.article?.original_url && (
+                  <a
+                    href={section.article.original_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    <ExternalLinkIcon className="w-3 h-3" />
+                    View Original Article
+                  </a>
+                )}
+              </div>
               <Input
                 id={`section-external-${index}`}
                 value={section.external_url || ''}
                 onChange={(e) =>
-                  onUpdate(
-                    index,
-                    'external_url',
-                    e.target.value,
-                  )
+                  onUpdate(index, 'external_url', e.target.value)
                 }
                 placeholder="https://example.com/additional-resource"
               />
@@ -128,6 +135,14 @@ export function ArticleSection({
                 Optional: Add a link to additional resources or references for this section
               </p>
             </div>
+          </div>
+
+          <div>
+            <TagsEditor
+              tags={section.tag_names || []}
+              onChange={(tagNames) => onUpdate(index, 'tag_names', tagNames)}
+              label="Section Tags"
+            />
           </div>
         </div>
       </CardContent>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Collection } from '@/services/collectionService';
+import { Collection } from '@/services/collections';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
 
@@ -41,22 +41,13 @@ export default function HomePage() {
               <p className="text-sm text-gray-600">Curated article collections</p>
             </div>
             
-            <div className="flex gap-3">
-              <Link href="/articles">
-                <Button>
-                  Browse Articles
-                  <ArrowRightIcon className="w-4 h-4 ml-2" />
+            {isAuthenticated && (
+              <Link href="/collections">
+                <Button variant="outline">
+                  Manage Collections
                 </Button>
               </Link>
-              
-              {isAuthenticated && (
-                <Link href="/collections">
-                  <Button variant="outline">
-                    Manage Collections
-                  </Button>
-                </Link>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>

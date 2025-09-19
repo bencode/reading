@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCollection, updateCollection, deleteCollection, createCollectionSection, deleteCollectionSection } from '@/services/collectionService';
+import {
+  getCollection,
+  updateCollection,
+  deleteCollection,
+  updateCollectionSections,
+  type SectionUpdateData
+} from '@/services/collections';
 
 export async function GET(
   request: NextRequest,
@@ -41,29 +47,23 @@ export async function PUT(
     return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
   }
 
-  // Update sections if provided
+  // Update sections if provided (using intelligent updates)
   if (sections && Array.isArray(sections)) {
-    // Delete all existing sections first
-    const currentCollection = await getCollection(id);
-    if (currentCollection?.sections) {
-      for (const section of currentCollection.sections) {
-        await deleteCollectionSection(section.id);
-      }
-    }
-    
-    // Create new sections
-    for (let i = 0; i < sections.length; i++) {
-      const sectionData = sections[i];
-      await createCollectionSection(id, {
-        article_id: sectionData.article_id,
-        title: sectionData.title,
-        description: sectionData.description,
-        image: sectionData.image,
-        external_url: sectionData.external_url,
-        order_index: i
-      });
-    }
-    
+    // Transform sections to include order_index and proper typing
+    const sectionsWithOrder: SectionUpdateData[] = sections.map((section, index) => ({
+      id: section.id, // May be undefined for new sections
+      article_id: section.article_id,
+      title: section.title,
+      description: section.description,
+      image: section.image,
+      external_url: section.external_url,
+      tag_names: section.tag_names,
+      order_index: index
+    }));
+
+    // Use intelligent update - only changes what's necessary
+    await updateCollectionSections(id, sectionsWithOrder);
+
     // Refetch collection with sections
     const updatedCollection = await getCollection(id);
     return NextResponse.json(updatedCollection);

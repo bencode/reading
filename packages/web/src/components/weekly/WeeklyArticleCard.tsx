@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { Collection } from '@/services/collectionService';
+import type { Collection } from '@/services/collections';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { OptimizedImage } from '@/components/OptimizedImage';
@@ -16,21 +16,21 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
   const displayContent = section.description || section.article?.summary;
   
   return (
-    <article>
+    <article className="group">
       {/* Article Header - Image (no padding) */}
       {section.image && (
-        <div className="w-full h-56 md:h-48 lg:h-56 overflow-hidden rounded-t-lg">
+        <div className="w-full h-56 md:h-48 lg:h-56 overflow-hidden">
           <OptimizedImage
             src={section.image}
             alt={section.title || section.article?.title || ''}
             size="full"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
           />
         </div>
       )}
       
       {/* Article Body - Text content (with padding) */}
-      <div className="px-4 py-6">
+      <div className="px-4 py-4">
         {/* Article Title */}
         <h2 className="text-lg font-semibold text-gray-900 mb-3">
           {section.title || section.article?.title || 'Untitled'}
@@ -49,7 +49,20 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
             </span>
           )}
         </div>
-        
+
+        {/* Tags */}
+        {section.tags && section.tags.length > 0 && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-1">
+              {section.tags.map((tag) => (
+                <Badge key={tag.id} variant="secondary" className="text-xs">
+                  {tag.name}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Description/Content */}
         {displayContent && (
           <div className="mb-6">
@@ -67,6 +80,7 @@ export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardP
               href={section.external_url || section.article?.original_url}
               target="_blank"
               rel="noopener noreferrer"
+              className="cursor-pointer"
             >
               <Button size="sm">
                 Read Original
