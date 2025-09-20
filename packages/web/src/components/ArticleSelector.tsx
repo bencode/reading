@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Article, PaginatedResponse } from '@/services/articleService'
-import { PlusIcon } from '@radix-ui/react-icons'
+import { PlusIcon, EyeOpenIcon, CheckIcon } from '@radix-ui/react-icons'
 
 type ArticleSelectorProps = {
   onArticleSelect: (article: Article) => void
@@ -68,6 +68,10 @@ export default function ArticleSelector({ onArticleSelect }: ArticleSelectorProp
   const handleArticleSelect = (article: Article) => {
     onArticleSelect(article)
     setIsDialogOpen(false)
+  }
+
+  const handleViewArticle = (article: Article) => {
+    window.open(article.original_url, '_blank')
   }
 
   return (
@@ -133,13 +137,10 @@ export default function ArticleSelector({ onArticleSelect }: ArticleSelectorProp
               {articles.map((article) => (
                 <Card
                   key={article.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  className="hover:shadow-md transition-shadow"
                 >
-                  <CardContent
-                    className="p-4"
-                    onClick={() => handleArticleSelect(article)}
-                  >
-                    <div className="flex justify-between items-start">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start gap-4">
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-900 mb-2">
                           {article.title}
@@ -162,6 +163,26 @@ export default function ArticleSelector({ onArticleSelect }: ArticleSelectorProp
                             </Badge>
                           )}
                         </div>
+                      </div>
+                      <div className="flex flex-col gap-2 min-w-0">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewArticle(article)}
+                          className="whitespace-nowrap"
+                        >
+                          <EyeOpenIcon className="w-3 h-3 mr-1" />
+                          View
+                        </Button>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleArticleSelect(article)}
+                          className="whitespace-nowrap"
+                        >
+                          <CheckIcon className="w-3 h-3 mr-1" />
+                          Select
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
