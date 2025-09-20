@@ -183,7 +183,11 @@ export function CollectionForm({ initialData, mode }: CollectionFormProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          <BasicInfoForm formData={formData} setFormData={updateBasicInfo} />
+          <BasicInfoForm
+            formData={formData}
+            setFormData={updateBasicInfo}
+            sections={formData.sections}
+          />
 
           <ArticleSectionsList
             sections={formData.sections}

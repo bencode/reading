@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { CollectionFormStatus } from '@/services/collections'
+import type { CollectionFormStatus, CollectionSection } from '@/services/collections'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { TextAssistant } from '@/components/TextAssistant'
 import { ImagePicker } from '@/components/ImagePicker'
@@ -26,9 +26,47 @@ type CollectionFormData = {
 type BasicInfoFormProps = {
   formData: CollectionFormData
   setFormData: (updater: (prev: CollectionFormData) => CollectionFormData) => void
+  sections?: CollectionSection[]
 }
 
-export function BasicInfoForm({ formData, setFormData }: BasicInfoFormProps) {
+export function BasicInfoForm({ formData, setFormData, sections = [] }: BasicInfoFormProps) {
+  // Generate intelligent context based on section tags and articles
+  const generateCoverImageContext = (): string => {
+    if (sections.length === 0) {
+      return `Programming weekly collection about: ${formData.title || 'various topics'}`
+    }
+
+    // Collect all tags and count their frequency
+    const tagCounts: Record<string, number> = {}
+    sections.forEach(section => {
+      const tags = section.tag_names || section.tags?.map(t => t.name) || []
+      tags.forEach(tag => {
+        if (tag) {
+          tagCounts[tag] = (tagCounts[tag] || 0) + 1
+        }
+      })
+    })
+
+    // Get top 5 most frequent tags
+    const topTags = Object.entries(tagCounts)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .map(([name]) => name)
+
+    // Also collect article sources for variety
+    const sources = [...new Set(
+      sections
+        .map(s => s.article?.source_name)
+        .filter(Boolean)
+        .slice(0, 3)
+    )]
+
+    if (topTags.length === 0) {
+      return `Programming weekly collection featuring articles from ${sources.join(', ')}`
+    }
+
+    return `Programming weekly collection focusing on: ${topTags.join(', ')}${sources.length > 0 ? ` from ${sources.join(', ')}` : ''}`
+  }
   return (
     <Card>
       <CardHeader>
@@ -85,7 +123,7 @@ export function BasicInfoForm({ formData, setFormData }: BasicInfoFormProps) {
             }
             label="Cover Image"
             placeholder="Add a cover image for this collection"
-            context={`Collection about: ${formData.title || 'various topics'}`}
+            context={generateCoverImageContext()}
           />
         </div>
 
