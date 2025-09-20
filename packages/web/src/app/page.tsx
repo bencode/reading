@@ -42,11 +42,18 @@ export default function HomePage() {
             </div>
             
             {isAuthenticated && (
-              <Link href="/collections">
-                <Button variant="outline">
-                  Manage Collections
-                </Button>
-              </Link>
+              <div className="flex gap-3">
+                <Link href="/articles">
+                  <Button variant="outline">
+                    All Articles
+                  </Button>
+                </Link>
+                <Link href="/collections">
+                  <Button variant="outline">
+                    Manage Collections
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>
