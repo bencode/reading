@@ -27,6 +27,8 @@ Guidelines:
 - Consider the context and suggest appropriate visual themes
 - Avoid complex scenes, focus on clear, impactful visuals
 - Include style keywords like "modern", "clean", "professional", "vibrant", etc.
+- IMPORTANT: For cover images, ALWAYS include "no text, no words, no labels" in the prompt to ensure clean visual design
+- For cover images, focus on abstract concepts, technology symbols, or thematic visual metaphors
 
 Response format: Just return the prompt text, nothing else.`;
 
