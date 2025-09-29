@@ -27,12 +27,12 @@ feeds:
 
     - name: "Smashing Magazine"
       url: "https://www.smashingmagazine.com/feed"
-      limit: 15
+      limit: 12
       enabled: true
 
     - name: "CSS-Tricks"
       url: "https://css-tricks.com/feed/"
-      limit: 15
+      limit: 12
       enabled: true
 
     - name: "MDN Web Docs Blog"
@@ -57,7 +57,7 @@ feeds:
 
     - name: "Frontend Focus Newsletter"
       url: "https://frontendfoc.us/rss"
-      limit: 15
+      limit: 12
       enabled: true
 
     - name: "web.dev"
@@ -65,36 +65,46 @@ feeds:
       limit: 15
       enabled: true
 
-    # Reddit 技术向子版块（高频，注意质量需靠 LLM 过滤）
+    # Reddit 技术向子版块（高频，降低限制提高质量）
     - name: "r/programming"
       url: "https://www.reddit.com/r/programming/.rss"
-      limit: 30
+      limit: 20
       enabled: true
 
     - name: "r/javascript"
       url: "https://www.reddit.com/r/javascript/.rss"
-      limit: 25
+      limit: 15
       enabled: true
 
     - name: "r/Python"
       url: "https://www.reddit.com/r/Python/.rss"
-      limit: 25
+      limit: 20
       enabled: true
 
     - name: "r/rust"
       url: "https://www.reddit.com/r/rust/.rss"
-      limit: 20
+      limit: 15
       enabled: true
 
 
     - name: "r/MachineLearning"
       url: "https://www.reddit.com/r/MachineLearning/.rss"
-      limit: 25
+      limit: 15
       enabled: true
 
   # Medium-frequency sources (regular publishers)
   # These sources publish regularly but less frequently
   medium_frequency:
+    - name: "Smashing Magazine"
+      url: "https://www.smashingmagazine.com/feed"
+      limit: 10
+      enabled: true
+
+    - name: "CSS-Tricks"
+      url: "https://css-tricks.com/feed/"
+      limit: 10
+      enabled: true
+
     - name: "Real Python"
       url: "https://realpython.com/atom.xml"
       limit: 10
@@ -175,25 +185,11 @@ feeds:
       limit: 10
       enabled: true
 
-    - name: "ESLint Blog"
-      url: "https://eslint.org/feed.xml"
-      limit: 10
-      enabled: true
+    # 移除：ESLint、Babel、webpack blog (更新频率很低)
+    # 这些工具的重要更新通常会在其他技术媒体中被报道
 
-    - name: "Babel Blog"
-      url: "https://babeljs.io/blog/feed.xml"
-      limit: 10
-      enabled: true
-
-    - name: "webpack Blog"
-      url: "https://webpack.js.org/feed.xml"
-      limit: 10
-      enabled: true
-
-    - name: "TC39 Proposals Updates"
-      url: "https://github.com/tc39/proposals/commits/main.atom"
-      limit: 5
-      enabled: true
+    # 移至 low_frequency：TC39 Proposals (更新很少)
+    # 原：TC39 Proposals Updates
 
     - name: "Rust Blog"
       url: "https://blog.rust-lang.org/feed.xml"
@@ -213,6 +209,16 @@ feeds:
     - name: "CNCF Blog"
       url: "https://www.cncf.io/feed/"
       limit: 10
+      enabled: true
+
+    - name: "Go Blog"
+      url: "https://go.dev/blog/feed.xml"
+      limit: 10
+      enabled: true
+
+    - name: "GitHub Engineering"
+      url: "https://github.blog/engineering/feed/"
+      limit: 12
       enabled: true
 
 
@@ -235,6 +241,16 @@ feeds:
     - name: "Cloudflare Blog"
       url: "https://blog.cloudflare.com/rss/"
       limit: 10
+      enabled: true
+
+    - name: "Stripe Engineering"
+      url: "https://stripe.com/blog/engineering/feed"
+      limit: 8
+      enabled: true
+
+    - name: "Netflix Tech Blog"
+      url: "https://netflixtechblog.com/feed"
+      limit: 8
       enabled: true
 
     - name: "NVIDIA Developer Blog"
@@ -267,14 +283,21 @@ feeds:
       limit: 10
       enabled: true
 
-    - name: "React Status"
-      url: "https://react.statuscode.com/rss"
+    - name: "Golang Weekly"
+      url: "https://golangweekly.com/rss"
       limit: 10
       enabled: true
 
+    - name: "Database Weekly"
+      url: "https://dbweekly.com/rss"
+      limit: 10
+      enabled: true
+
+    # 移除：React Status (与React Blog和Frontend Focus重复)
+
     - name: "Papers with Code (Latest)"
       url: "https://paperswithcode.com/feeds/latest"
-      limit: 10
+      limit: 15
       enabled: true
 
     - name: "TensorFlow Blog"
@@ -292,6 +315,11 @@ feeds:
   # Low-frequency sources (personal blogs, specialized content)
   # These sources publish occasionally but with high-quality content
   low_frequency:
+    - name: "TC39 Proposals Updates"
+      url: "https://github.com/tc39/proposals/commits/main.atom"
+      limit: 3
+      enabled: true
+
     - name: "Martin Fowler"
       url: "https://martinfowler.com/feed.xml"
       limit: 5
@@ -361,17 +389,17 @@ feeds:
     # arXiv（按学科拆分，偶发爆量，交给 LLM 去筛）
     - name: "arXiv cs.CL (NLP)"
       url: "http://export.arxiv.org/rss/cs.CL"
-      limit: 10
+      limit: 12
       enabled: true
 
     - name: "arXiv cs.LG (ML)"
       url: "http://export.arxiv.org/rss/cs.LG"
-      limit: 10
+      limit: 12
       enabled: true
 
     - name: "arXiv cs.IR (IR/RAG)"
       url: "http://export.arxiv.org/rss/cs.IR"
-      limit: 10
+      limit: 12
       enabled: true
 
 # Global settings
