@@ -12,7 +12,7 @@ type WeeklyArticleCardProps = {
   index: number;
 };
 
-export default function WeeklyArticleCard({ section, index }: WeeklyArticleCardProps) {
+export default function WeeklyArticleCard({ section }: WeeklyArticleCardProps) {
   const displayContent = section.description || section.article?.summary;
   
   return (

@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label'
 import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { TextAssistant } from '@/components/TextAssistant'
 import { ImagePicker } from '@/components/ImagePicker'
-import TextOptimizer from '@/components/TextOptimizer'
 import { TagsEditor } from './TagsEditor'
 
 type ArticleSectionProps = {

@@ -3,8 +3,7 @@ import type {
   Collection,
   CreateCollectionData,
   UpdateCollectionData,
-  PaginatedResponse,
-  CollectionStatus
+  PaginatedResponse
 } from './types';
 import { getCollectionSections } from './collectionSectionService';
 

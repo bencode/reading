@@ -87,3 +87,4 @@ Database schema changes are managed through yoyo-migrations in `packages/tasks/m
 - Schema modifications for the articles table
 - Population of default categories
 - 系统用英文
+- 重构原则：react的useEffect依赖的重构，如能正常工作，则先忽略警告，除非确定功能没有影响。
