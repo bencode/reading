@@ -5,6 +5,8 @@ beautifulsoup4
 python-dotenv
 yoyo-migrations
 PyYAML
+playwright
+python-dateutil
 
 # Development dependencies
 flake8

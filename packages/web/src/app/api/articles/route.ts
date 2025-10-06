@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const data: CreateArticleData = await request.json()
-  
+
   if (!data.title || !data.original_url || !data.summary || !data.source_name) {
     return NextResponse.json(
       { error: 'Missing required fields' },
@@ -48,15 +48,16 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await createArticle(data)
-  
+
   if (result.success) {
     return NextResponse.json(
-      { 
-        success: true, 
+      {
+        success: true,
         id: result.id,
-        message: 'Article created successfully' 
+        updated: result.updated,
+        message: result.updated ? 'Article updated successfully' : 'Article created successfully'
       },
-      { status: 201 }
+      { status: result.updated ? 200 : 201 }
     )
   } else {
     return NextResponse.json(

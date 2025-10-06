@@ -269,6 +269,16 @@ function HomeContent() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-2">Articles</h1>
           <p className="text-lg text-gray-600">Browse and manage your reading collection</p>
+          {isAuthenticated && (
+            <div className="mt-4">
+              <Button
+                onClick={() => router.push('/articles/import')}
+                variant="outline"
+              >
+                + Import Article
+              </Button>
+            </div>
+          )}
         </div>
 
         <ArticleFilters 
