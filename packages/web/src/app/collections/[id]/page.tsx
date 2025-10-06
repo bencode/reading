@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collection } from '@/services/collections';
@@ -136,7 +136,7 @@ export default function CollectionDetailPage() {
         <div className="space-y-6">
           {collection.sections && collection.sections.length > 0 ? (
             <>
-              {collection.sections.map((section, index) => (
+              {collection.sections.map((section) => (
                 <Card key={section.id} className="overflow-hidden">
                   <CardContent className="p-6">
                     <div className="flex gap-6">

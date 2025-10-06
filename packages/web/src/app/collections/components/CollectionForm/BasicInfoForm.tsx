@@ -14,7 +14,6 @@ import type { CollectionFormStatus, CollectionSection } from '@/services/collect
 import { MarkdownEditor } from '@/components/MarkdownEditor'
 import { TextAssistant } from '@/components/TextAssistant'
 import { ImagePicker } from '@/components/ImagePicker'
-import TextOptimizer from '@/components/TextOptimizer'
 
 type CollectionFormData = {
   title: string
