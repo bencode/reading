@@ -32,6 +32,7 @@ export function ImagePicker({
   const [uploadLoading, setUploadLoading] = useState(false)
   const [generateLoading, setGenerateLoading] = useState(false)
   const [generatePrompt, setGeneratePrompt] = useState('')
+  const [negativePrompt, setNegativePrompt] = useState('')
   const [promptLoading, setPromptLoading] = useState(false)
   const [currentUrl, setCurrentUrl] = useState(value || '')
 
@@ -65,6 +66,10 @@ export function ImagePicker({
       }
 
       const data = await response.json()
+      // Store negative prompt for image generation
+      if (data.negativePrompt) {
+        setNegativePrompt(data.negativePrompt)
+      }
       return data.prompt
     } finally {
       setPromptLoading(false)
@@ -132,7 +137,10 @@ export function ImagePicker({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: generatePrompt }),
+        body: JSON.stringify({
+          prompt: generatePrompt,
+          negativePrompt: negativePrompt || undefined
+        }),
       })
 
       if (!response.ok) {

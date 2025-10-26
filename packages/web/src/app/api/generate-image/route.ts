@@ -15,7 +15,7 @@ function getUploadDir(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt } = await request.json();
+    const { prompt, negativePrompt } = await request.json();
 
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
           ]
         },
         parameters: {
-          negative_prompt: '',
+          negative_prompt: negativePrompt || '',
           prompt_extend: true,
           watermark: false, // Set to false to avoid watermarks
           size: '1328*1328' // Square format from allowed sizes
