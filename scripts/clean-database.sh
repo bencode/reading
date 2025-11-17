@@ -99,9 +99,9 @@ done
 
 log "${YELLOW}🔍 Running database cleaner: $CMD${NC}"
 
-# Run the cleaner using docker-compose
+# Run the cleaner using docker compose
 # Use the tasks service from the tools profile
-if docker-compose --profile tools run --rm --build tasks $CMD; then
+if docker compose --profile tools run --rm --build tasks $CMD; then
     log "${GREEN}✅ Database cleaner completed successfully${NC}"
 else
     exit_code=$?

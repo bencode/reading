@@ -144,16 +144,16 @@ show_info() {
 
 migrate_database() {
     echo -e "${YELLOW}🔄 Running database migrations...${NC}"
-    
-    if command -v docker-compose &> /dev/null && [ -f "$PROJECT_ROOT/docker-compose.yml" ]; then
+
+    if command -v docker &> /dev/null && docker compose version &> /dev/null && [ -f "$PROJECT_ROOT/docker-compose.yml" ]; then
         cd "$PROJECT_ROOT"
-        docker-compose run --rm db_init
+        docker compose run --rm db_init
     else
         echo -e "${YELLOW}Docker not available, running local migration...${NC}"
         cd "$PROJECT_ROOT/packages/tasks"
         yoyo apply --batch
     fi
-    
+
     echo -e "${GREEN}✅ Migrations completed${NC}"
 }
 

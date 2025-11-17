@@ -33,14 +33,14 @@ if [ ! -f ".env" ]; then
     exit 1
 fi
 
-# Run the scraper using docker-compose
+# Run the scraper using docker compose
 log "${YELLOW}📡 Running article scraper...${NC}"
 
-# Use docker-compose run with the tasks service
+# Use docker compose run with the tasks service
 # --rm: Remove container after execution
 # --build: Rebuild image if source code changed
 # The 'tools' profile ensures the tasks service is available
-if docker-compose --profile tools run --rm --build tasks python scraper.py; then
+if docker compose --profile tools run --rm --build tasks python scraper.py; then
     log "${GREEN}✅ Article scraper completed successfully${NC}"
 else
     log "${RED}❌ Article scraper failed with exit code $?${NC}"

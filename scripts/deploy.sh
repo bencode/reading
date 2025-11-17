@@ -20,14 +20,15 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-# Check if Docker and Docker Compose are installed
+# Check if Docker is installed
 if ! command -v docker &> /dev/null; then
     echo -e "${RED}❌ Docker is not installed. Please install Docker first.${NC}"
     exit 1
 fi
 
-if ! command -v docker-compose &> /dev/null; then
-    echo -e "${RED}❌ Docker Compose is not installed. Please install Docker Compose first.${NC}"
+# Check if Docker Compose is available (V2 integrated version)
+if ! docker compose version &> /dev/null; then
+    echo -e "${RED}❌ Docker Compose is not available. Please install Docker with Compose plugin.${NC}"
     exit 1
 fi
 
@@ -35,27 +36,27 @@ echo -e "${GREEN}✅ Prerequisites check passed${NC}"
 
 # Build images first to avoid downtime during deployment
 echo -e "${YELLOW}🔨 Building images (this may take a while)...${NC}"
-docker-compose build
+docker compose build
 
 echo -e "${YELLOW}🔄 Performing zero-downtime deployment...${NC}"
 
 # Check if services are currently running
-if docker-compose ps --services --filter "status=running" | grep -q .; then
+if docker compose ps --services --filter "status=running" | grep -q .; then
     echo -e "${YELLOW}📦 Services are running, performing rolling update...${NC}"
-    
+
     # Use up with --force-recreate to replace containers with new images
     # This recreates containers but tries to minimize downtime
-    docker-compose up -d --force-recreate --remove-orphans
-    
+    docker compose up -d --force-recreate --remove-orphans
+
     # Wait a moment for services to stabilize
     echo -e "${YELLOW}⏳ Waiting for services to stabilize...${NC}"
     sleep 5
-    
+
     echo -e "${YELLOW}🧹 Cleaning up old images...${NC}"
     docker image prune -f
 else
     echo -e "${YELLOW}🆕 First time deployment, starting services...${NC}"
-    docker-compose up -d
+    docker compose up -d
 fi
 
 # Wait for services to be ready
@@ -63,10 +64,10 @@ echo -e "${YELLOW}⏳ Waiting for services to be ready...${NC}"
 sleep 10
 
 # Check if web service is running
-if docker-compose ps web | grep -q "Up"; then
+if docker compose ps web | grep -q "Up"; then
     echo -e "${GREEN}✅ Web service is running${NC}"
     echo -e "${GREEN}🌐 Application is available at: http://localhost:3000${NC}"
-    
+
     # Extract ACCESS_TOKEN from .env for admin access
     if grep -q "ACCESS_TOKEN=" .env; then
         ACCESS_TOKEN=$(grep "ACCESS_TOKEN=" .env | cut -d '=' -f2)
@@ -75,20 +76,20 @@ if docker-compose ps web | grep -q "Up"; then
 else
     echo -e "${RED}❌ Web service failed to start${NC}"
     echo "Checking logs..."
-    docker-compose logs web
+    docker compose logs web
     exit 1
 fi
 
 # Show running services
 echo -e "${GREEN}📊 Running services:${NC}"
-docker-compose ps
+docker compose ps
 
 echo -e "${GREEN}✨ Deployment completed successfully!${NC}"
 echo ""
 echo -e "${YELLOW}📝 Useful commands:${NC}"
-echo "  View logs:           docker-compose logs -f"
-echo "  Stop services:       docker-compose down"
-echo "  Restart services:    docker-compose restart"
+echo "  View logs:           docker compose logs -f"
+echo "  Stop services:       docker compose down"
+echo "  Restart services:    docker compose restart"
 echo "  Run scraper manually: ./run-scraper.sh"
 echo "  Update application:  ./deploy.sh"
 echo ""
