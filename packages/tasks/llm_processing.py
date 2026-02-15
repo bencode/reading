@@ -101,6 +101,9 @@ def _get_summary_and_tags_from_llm(summary_tags_prompt, headers, content, api_en
 
         parsed_output = json.loads(json_string)
         summary = parsed_output.get("summary", f"Summary: {content[:200]}...")
+        # LLM may return summary as a list of bullet points; join into a single string
+        if isinstance(summary, list):
+            summary = "\n".join(summary)
         tags = parsed_output.get("tags", [])
 
         # Ensure tags is a list and limit to 3

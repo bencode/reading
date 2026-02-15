@@ -1,4 +1,5 @@
 import os
+import time
 
 import feedparser
 import yaml
@@ -47,17 +48,38 @@ def load_feeds():
     }
 
 
-def fetch_rss_feed(feed_url):
-    """Fetches and parses an RSS feed."""
-    try:
-        feed = feedparser.parse(feed_url)
-        if feed.bozo:
-            print(f"Error parsing feed {feed_url}: {feed.bozo_exception}")
+USER_AGENT = "ReadingBot/1.0 (tech article aggregator; +https://github.com/bencode/reading)"
+
+
+def fetch_rss_feed(feed_url, retries=1):
+    """Fetches and parses an RSS feed with User-Agent and retry."""
+    for attempt in range(retries + 1):
+        try:
+            feed = feedparser.parse(
+                feed_url,
+                agent=USER_AGENT,
+                request_headers={"Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml"},
+            )
+            if feed.bozo:
+                exception = feed.bozo_exception
+                # Some feeds have minor issues but still contain valid entries
+                if feed.entries:
+                    print(f"⚠ Feed {feed_url} has parse warning but contains {len(feed.entries)} entries: {exception}")
+                    return feed
+                print(f"✗ Feed parse error {feed_url}: {exception}")
+                if attempt < retries:
+                    print(f"  Retrying in 3s... (attempt {attempt + 2}/{retries + 1})")
+                    time.sleep(3)
+                    continue
+                return None
+            return feed
+        except Exception as e:
+            print(f"✗ Failed to fetch feed {feed_url}: {e}")
+            if attempt < retries:
+                print(f"  Retrying in 3s... (attempt {attempt + 2}/{retries + 1})")
+                time.sleep(3)
+                continue
             return None
-        return feed
-    except Exception as e:
-        print(f"An error occurred while fetching the feed {feed_url}: {e}")
-        return None
 
 
 def _setup_database_connection():
@@ -155,6 +177,11 @@ def _process_feed_source(source, feed_config, use_api, conn, fetch_full_content)
 
     feed = fetch_rss_feed(url)
     if not feed:
+        print(f"⚠ FEED FETCH FAILED: {source} ({url}) — no data returned, check connectivity or feed format")
+        return 0, 0, 0
+
+    if not feed.entries:
+        print(f"⚠ Feed returned 0 entries: {source} ({url}) — feed may be empty or blocked")
         return 0, 0, 0
 
     articles_to_process = feed.entries[:limit]

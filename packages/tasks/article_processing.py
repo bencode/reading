@@ -39,7 +39,16 @@ def insert_article_api(article, category_name=None, tag_names=None):
 
     response = requests.post(f"{web_api_url}/api/articles", json=payload, timeout=30)
 
-    result = response.json()
+    if response.status_code >= 500:
+        print(f"✗ Server error inserting article: {article['title']} — HTTP {response.status_code}")
+        return False
+
+    try:
+        result = response.json()
+    except Exception:
+        print(f"✗ Invalid response inserting article: {article['title']} — HTTP {response.status_code}, body: {response.text[:200]}")
+        return False
+
     if result.get("success"):
         print(f"✓ Inserted new article: {article['title']} with ID {result['id']}")
         if category_name:

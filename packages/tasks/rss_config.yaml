@@ -7,12 +7,12 @@ feeds:
   high_frequency:
     - name: "Hacker News"
       url: "https://news.ycombinator.com/rss"
-      limit: 30
+      limit: 20
       enabled: true
 
     - name: "Lobsters"
       url: "https://lobste.rs/rss"
-      limit: 25
+      limit: 15
       enabled: true
 
     - name: "InfoQ"
@@ -68,7 +68,7 @@ feeds:
     # Reddit 技术向子版块（高频，降低限制提高质量）
     - name: "r/programming"
       url: "https://www.reddit.com/r/programming/.rss"
-      limit: 20
+      limit: 12
       enabled: true
 
     - name: "r/javascript"
@@ -86,7 +86,6 @@ feeds:
       limit: 15
       enabled: true
 
-
     - name: "r/MachineLearning"
       url: "https://www.reddit.com/r/MachineLearning/.rss"
       limit: 15
@@ -95,16 +94,6 @@ feeds:
   # Medium-frequency sources (regular publishers)
   # These sources publish regularly but less frequently
   medium_frequency:
-    - name: "Smashing Magazine"
-      url: "https://www.smashingmagazine.com/feed"
-      limit: 10
-      enabled: true
-
-    - name: "CSS-Tricks"
-      url: "https://css-tricks.com/feed/"
-      limit: 10
-      enabled: true
-
     - name: "Real Python"
       url: "https://realpython.com/atom.xml"
       limit: 10
@@ -126,7 +115,7 @@ feeds:
       enabled: true
 
     - name: "React Blog"
-      url: "https://react.dev/feed.xml"
+      url: "https://react.dev/rss.xml"
       limit: 10
       enabled: true
 
@@ -136,7 +125,7 @@ feeds:
       enabled: true
 
     - name: "Angular Blog"
-      url: "https://blog.angular.io/feed"
+      url: "https://blog.angular.dev/feed"
       limit: 10
       enabled: true
 
@@ -146,7 +135,7 @@ feeds:
       enabled: true
 
     - name: "Nuxt Blog"
-      url: "https://nuxt.com/blog/feed.xml"
+      url: "https://nuxt.com/blog/rss.xml"
       limit: 10
       enabled: true
 
@@ -156,17 +145,12 @@ feeds:
       enabled: true
 
     - name: "Google AI Blog"
-      url: "https://ai.googleblog.com/feeds/posts/default"
+      url: "https://blog.google/technology/ai/rss/"
       limit: 10
       enabled: true
 
     - name: "Hugging Face Blog"
       url: "https://huggingface.co/blog/feed.xml"
-      limit: 10
-      enabled: true
-
-    - name: "Anthropic Blog"
-      url: "https://www.anthropic.com/news/rss.xml"
       limit: 10
       enabled: true
 
@@ -221,8 +205,6 @@ feeds:
       limit: 12
       enabled: true
 
-
-
     - name: "Fly.io Blog (Engineering)"
       url: "https://fly.io/blog/rss.xml"
       limit: 10
@@ -244,7 +226,7 @@ feeds:
       enabled: true
 
     - name: "Stripe Engineering"
-      url: "https://stripe.com/blog/engineering/feed"
+      url: "https://stripe.com/blog/feed.rss"
       limit: 8
       enabled: true
 
@@ -274,7 +256,7 @@ feeds:
       enabled: true
 
     - name: "Redis Blog"
-      url: "https://redis.io/blog/rss.xml"
+      url: "https://redis.io/feed/"
       limit: 10
       enabled: true
 
@@ -310,8 +292,6 @@ feeds:
       limit: 10
       enabled: true
 
-
-
   # Low-frequency sources (personal blogs, specialized content)
   # These sources publish occasionally but with high-quality content
   low_frequency:
@@ -331,11 +311,6 @@ feeds:
       limit: 5
       enabled: true
 
-    - name: "Lambda the Ultimate"
-      url: "http://lambda-the-ultimate.org/rss.xml"
-      limit: 5
-      enabled: true
-
     - name: "Overreacted (Dan Abramov)"
       url: "https://overreacted.io/rss.xml"
       limit: 5
@@ -351,11 +326,6 @@ feeds:
       limit: 5
       enabled: true
 
-    - name: "Distill.pub"
-      url: "https://distill.pub/rss.xml"
-      limit: 5
-      enabled: true
-
     - name: "OpenAI Blog"
       url: "https://openai.com/blog/rss.xml"
       limit: 5
@@ -367,12 +337,12 @@ feeds:
       enabled: true
 
     - name: "Import AI Newsletter"
-      url: "https://importai.net/feed"
+      url: "https://jack-clark.net/feed/"
       limit: 5
       enabled: true
 
     - name: "Andrej Karpathy's Blog"
-      url: "https://karpathy.blog/rss.xml"
+      url: "https://karpathy.github.io/feed.xml"
       limit: 5
       enabled: true
 
@@ -382,24 +352,24 @@ feeds:
       enabled: true
 
     - name: "Bartosz Milewski (FP/Cat)"
-      url: "http://bartoszmilewski.com/feed/"
+      url: "https://bartoszmilewski.com/feed/"
       limit: 5
       enabled: true
 
     # arXiv（按学科拆分，偶发爆量，交给 LLM 去筛）
     - name: "arXiv cs.CL (NLP)"
       url: "http://export.arxiv.org/rss/cs.CL"
-      limit: 12
+      limit: 8
       enabled: true
 
     - name: "arXiv cs.LG (ML)"
       url: "http://export.arxiv.org/rss/cs.LG"
-      limit: 12
+      limit: 5
       enabled: true
 
     - name: "arXiv cs.IR (IR/RAG)"
       url: "http://export.arxiv.org/rss/cs.IR"
-      limit: 12
+      limit: 5
       enabled: true
 
 # Global settings
@@ -413,26 +383,6 @@ settings:
   # Whether to skip disabled feeds
   skip_disabled: true
 
-  # —— Optional tuning (your scraper can ignore unknown fields) ——
-  # Max concurrent requests (to keep polite scraping)
-  max_concurrency: 6
-
-  # Retry policy
-  retry:
-    max_retries: 2
-    backoff_seconds: 2
-
-  # Conditional request caching
-  http_cache:
-    use_etag: true
-    use_last_modified: true
-
-  # Dedupe articles by (url|title|url+title|content_hash)
-  dedupe_by: "url"
-
-  # Basic UA to avoid some feeds blocking default clients
-  user_agent: "ReadingBot/1.0 (+https://example.com)"
-  
   # Whether to fetch full article content from original URLs
   fetch_full_content: true
 
@@ -465,7 +415,6 @@ classification:
       keywords: ["webpack", "Vite", "Rollup", "esbuild", "Parcel", "性能优化", "Chrome DevTools", "Web Vitals", "DX"]
       priority: 5
 
-
     - name: "JavaScript / TypeScript / Node.js"
       description: "JS/TS 语言与编译器、Node/Bun/Deno 运行时、V8/tsc、包管理与构建工具"
       keywords: ["TypeScript", "tsc", "V8", "Node", "npm", "pnpm", "Bun", "Deno", "ES提案", "AST", "构建链"]
@@ -491,20 +440,25 @@ classification:
       keywords: ["immutability", "macro", "transducer", "STM", "REPL", "Clojure", "Scheme", "Lisp"]
       priority: 10
 
+    - name: "计算机科学与编程探索"
+      description: "算法与数据结构可视化、数学与编程的交叉、编程语言理论、编辑器与开发工具、硬件与底层原理、趣味编程与创意项目"
+      keywords: ["algorithm", "visualization", "math", "数学", "编辑器", "Emacs", "Vim", "排版", "Typst", "hardware", "底层", "编译器", "maze", "puzzle", "Game of Life", "可视化"]
+      priority: 11
+
     - name: "人物与思想 / 架构与文化"
       description: "知名作者长文、工程哲学、架构演进与案例复盘、团队文化与方法论"
       keywords: ["principles", "culture", "architecture", "retrospective", "postmortem", "career", "leadership"]
-      priority: 11
+      priority: 12
 
     - name: "精选与综合"
       description: "多源汇总、每周刊/周报、榜单、社区热帖精选、通识型快讯"
       keywords: ["weekly", "status", "digest", "roundup", "top", "trending", "newsletter", "汇总"]
-      priority: 12
+      priority: 13
 
     - name: "Other"
       description: "无法明确归属或跨域过度；应保持低占比，并定期回溯优化边界"
       keywords: []
-      priority: 13
+      priority: 14
 
   # LLM prompt template for classification
   prompt_template: |
@@ -516,6 +470,7 @@ classification:
     - 框架 UI/浏览器选"前端与 Web 平台"，JS/TS 语言/Node 运行时选"JavaScript / TypeScript / Node.js"
     - 构建工具、性能优化、开发工具选"Web 开发工具与性能"
     - 容器、K8s、运维选"云原生与运维平台"
+    - 算法可视化、数学与编程交叉、编辑器工具、硬件底层原理、趣味编程选"计算机科学与编程探索"
     - 不能归类时才选"Other"
     - 只输出一个类别名称
 
