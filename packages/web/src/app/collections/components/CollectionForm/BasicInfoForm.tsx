@@ -29,13 +29,18 @@ type BasicInfoFormProps = {
 }
 
 export function BasicInfoForm({ formData, setFormData, sections = [] }: BasicInfoFormProps) {
-  // Generate intelligent context based on section tags and articles
   const generateCoverImageContext = (): string => {
     if (sections.length === 0) {
-      return `Programming weekly collection about: ${formData.title || 'various topics'}`
+      return formData.title || 'Programming weekly collection'
     }
 
-    // Collect all tags and count their frequency
+    // Collect article titles (up to 6)
+    const articleTitles = sections
+      .map(s => s.article?.title)
+      .filter(Boolean)
+      .slice(0, 6)
+
+    // Collect all tags and get top topics
     const tagCounts: Record<string, number> = {}
     sections.forEach(section => {
       const tags = section.tag_names || section.tags?.map(t => t.name) || []
@@ -45,26 +50,19 @@ export function BasicInfoForm({ formData, setFormData, sections = [] }: BasicInf
         }
       })
     })
-
-    // Get top 5 most frequent tags
     const topTags = Object.entries(tagCounts)
       .sort(([,a], [,b]) => b - a)
-      .slice(0, 5)
+      .slice(0, 6)
       .map(([name]) => name)
 
-    // Also collect article sources for variety
-    const sources = [...new Set(
-      sections
-        .map(s => s.article?.source_name)
-        .filter(Boolean)
-        .slice(0, 3)
-    )]
-
-    if (topTags.length === 0) {
-      return `Programming weekly collection featuring articles from ${sources.join(', ')}`
+    const parts = [formData.title || '编程技艺周刊']
+    if (articleTitles.length > 0) {
+      parts.push(`收录文章：${articleTitles.map(t => `'${t}'`).join('、')}`)
     }
-
-    return `Programming weekly collection focusing on: ${topTags.join(', ')}${sources.length > 0 ? ` from ${sources.join(', ')}` : ''}`
+    if (topTags.length > 0) {
+      parts.push(`主要话题：${topTags.join(', ')}`)
+    }
+    return parts.join('，')
   }
   return (
     <Card>
@@ -123,6 +121,7 @@ export function BasicInfoForm({ formData, setFormData, sections = [] }: BasicInf
             label="Cover Image"
             placeholder="Add a cover image for this collection"
             context={generateCoverImageContext()}
+            aspectRatio="landscape"
           />
         </div>
 

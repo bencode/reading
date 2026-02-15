@@ -104,10 +104,10 @@ export async function createArticle(data: CreateArticleData): Promise<{ success:
       summary: data.summary,
       source_name: data.source_name,
       published_at: data.published_at,
-      is_read: false,
-      is_skipped: false,
-      starred: false,
-      deleted: false,
+      is_read: 0,
+      is_skipped: 0,
+      starred: 0,
+      deleted: 0,
       rating: null,
       note: null
     });

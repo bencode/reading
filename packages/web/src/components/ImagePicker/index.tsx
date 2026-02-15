@@ -19,14 +19,16 @@ type ImagePickerProps = {
   label?: string
   placeholder?: string
   context?: string
+  aspectRatio?: 'landscape' | 'square'
 }
 
-export function ImagePicker({ 
-  value, 
-  onChange, 
-  label = "Image", 
-  placeholder = "Enter image URL or upload/generate", 
-  context 
+export function ImagePicker({
+  value,
+  onChange,
+  label = "Image",
+  placeholder = "Enter image URL or upload/generate",
+  context,
+  aspectRatio,
 }: ImagePickerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [uploadLoading, setUploadLoading] = useState(false)
@@ -139,7 +141,8 @@ export function ImagePicker({
         },
         body: JSON.stringify({
           prompt: generatePrompt,
-          negativePrompt: negativePrompt || undefined
+          negativePrompt: negativePrompt || undefined,
+          aspectRatio,
         }),
       })
 

@@ -15,7 +15,7 @@ function getUploadDir(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, negativePrompt } = await request.json();
+    const { prompt, negativePrompt, aspectRatio = 'square' } = await request.json();
 
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
         parameters: {
           negative_prompt: negativePrompt || '',
           prompt_extend: true,
-          watermark: false, // Set to false to avoid watermarks
-          size: '1328*1328' // Square format from allowed sizes
+          watermark: false,
+          size: aspectRatio === 'landscape' ? '1280*720' : '1328*1328'
         }
       }),
     });

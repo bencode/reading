@@ -22,21 +22,28 @@ const VISUAL_STYLES = [
   'pastel colors',
 ];
 
-// Negative prompts to avoid common issues
-const NEGATIVE_PROMPTS = [
-  'blurry, low quality, distorted',
+// Base negative prompt (always included)
+const BASE_NEGATIVE_PROMPT = 'text, words, letters, labels, watermark, blurry, low quality, distorted, photorealistic people, faces';
+
+// Random negative prompt pool (pick 1-2 each time for variety)
+const EXTRA_NEGATIVE_PROMPTS = [
   'cluttered, messy, chaotic',
   'dark, gloomy, unclear',
   'oversaturated, garish',
-  'photorealistic people, faces',
+  'boring, flat, lifeless',
+  'noisy, grainy, pixelated',
 ];
 
 const getRandomStyle = (): string => {
   return VISUAL_STYLES[Math.floor(Math.random() * VISUAL_STYLES.length)];
 };
 
-const getRandomNegativePrompt = (): string => {
-  return NEGATIVE_PROMPTS[Math.floor(Math.random() * NEGATIVE_PROMPTS.length)];
+const buildNegativePrompt = (): string => {
+  // Shuffle and pick 1-2 extras
+  const shuffled = [...EXTRA_NEGATIVE_PROMPTS].sort(() => Math.random() - 0.5);
+  const count = Math.random() < 0.5 ? 1 : 2;
+  const extras = shuffled.slice(0, count).join(', ');
+  return `${BASE_NEGATIVE_PROMPT}, ${extras}`;
 };
 
 export async function POST(request: NextRequest) {
@@ -58,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     // Select random visual style for diversity
     const visualStyle = getRandomStyle();
-    const negativePrompt = getRandomNegativePrompt();
+    const negativePrompt = buildNegativePrompt();
 
     // Use LLM to generate smart image prompt
     const systemPrompt = `You are an expert at creating visual image generation prompts. Given a context/topic, generate a detailed, creative prompt for image generation that would create an engaging, professional-quality image.
@@ -67,7 +74,8 @@ Guidelines:
 - Keep prompts concise but descriptive (1-2 sentences)
 - Focus on visual style, composition, and mood
 - Use professional photography or illustration terminology
-- Consider the context and suggest appropriate visual themes
+- Extract visual metaphors from article titles and topics — translate technical concepts into abstract visual imagery
+- Avoid overly literal tech imagery (keyboards, screens, code snippets, monitors, laptops) — prefer abstract and symbolic representations
 - Avoid complex scenes, focus on clear, impactful visuals
 - IMPORTANT: For cover images, ALWAYS include "no text, no words, no labels" in the prompt to ensure clean visual design
 - For cover images, focus on abstract concepts, technology symbols, or thematic visual metaphors
